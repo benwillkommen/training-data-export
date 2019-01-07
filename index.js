@@ -2,6 +2,8 @@ const fs = require('fs');
 const { google } = require('googleapis');
 const authorize = require('./authorize')
 const { promisify } = require('util');
+const { isRowEmpty, stripBodyWeightRows, extractAndLabelDay } = require('./rowProcessing')
+const { convertArrayToCSV } = require('convert-array-to-csv');
 
 const SPREADSHEET_ID = process.argv[2] || '1Au638nEKSAa2xl8WucH_XW3tw8urKooXJHr9kmlkf1E'
 
@@ -26,23 +28,34 @@ function downloadSpreadsheetAsync(spreadsheetId, auth) {
     getSpreadsheetAsync({ spreadsheetId })
         .then(res => res.data.sheets.map(s => s.properties.title))
         .then(sheetTitles => downloadSheetsAsync(spreadsheetId, sheetTitles, sheetsClient))
-        .then(sheetPromises => sheetPromises.map(processSheet));
+        .then(sheetPromises => sheetPromises.map(cleanSheet))
+        .then(cleanedSheetPromises => Promise.all(cleanedSheetPromises))
+        .then(cleanedSheets => cleanedSheets.sort((x, y) => x[0][0] > y[0][0]))
+        .then(cleanedSheets => cleanedSheets.reduce((prev, curr) => prev.concat(curr), []))
+        .then(cleanedRows => fs.writeFile(`./data/spreadsheet-export-${new Date().getTime()}`, convertArrayToCSV(cleanedRows)));
 }
 
-function processSheet(sheetPromise) {
-    sheetPromise.then(sheet => {
+function cleanSheet(sheetPromise) {
+
+    return sheetPromise.then(sheet => {
         const rows = sheet.data.values;
-        console.log(sheet.data.sheetTitle);
-
-        for (let i = 0; i < rows.length; i++) {
-            console.log(rows[i])
-        }
-
+        const cleanedRows = stripBodyWeightRows(rows.filter(r => !isRowEmpty(r)));
+        const dayLabeledRows = labelDays(cleanedRows, 1);
+        const weekLabeledRows = dayLabeledRows.map(r => {
+            r.unshift(sheet.data.sheetTitle);
+            return r;
+        });
+        return weekLabeledRows;
     });
 }
 
+function labelDays(cleanedRows) {
+    return extractAndLabelDay(cleanedRows, 1).concat(extractAndLabelDay(cleanedRows, 2)).concat(extractAndLabelDay(cleanedRows, 3)).concat(extractAndLabelDay(cleanedRows, 4));
+}
+
+
 function downloadSheetsAsync(spreadsheetId, sheetTitles, sheetsClient) {
-    sheetTitles = sheetTitles.slice(0, 3); // uncomment when ready to process them all
+    sheetTitles = sheetTitles.slice(0, 10); // uncomment when ready to process them all
 
     const getSheetAsync = promisify(sheetsClient.spreadsheets.values.get);
 
