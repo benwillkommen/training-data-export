@@ -18,7 +18,7 @@ function extractAndLabelDay(rows, day) {
     const endIndex = rows.findIndex((row, index) => index > startIndex && row.length > 0 && !isCellEmpty(row[0]));
 
     return rows.slice(startIndex + 1, endIndex).map(r => {
-        r[0] = searchString;
+        r[0] = day;
         return r;
     });
 }

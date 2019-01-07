@@ -4,6 +4,7 @@ const authorize = require('./authorize')
 const { promisify } = require('util');
 const { isRowEmpty, stripBodyWeightRows, extractAndLabelDay } = require('./rowProcessing')
 const { convertArrayToCSV } = require('convert-array-to-csv');
+const sleep = require('system-sleep');
 
 const SPREADSHEET_ID = process.argv[2] || '1Au638nEKSAa2xl8WucH_XW3tw8urKooXJHr9kmlkf1E'
 
@@ -42,7 +43,7 @@ function cleanSheet(sheetPromise) {
         const cleanedRows = stripBodyWeightRows(rows.filter(r => !isRowEmpty(r)));
         const dayLabeledRows = labelDays(cleanedRows, 1);
         const weekLabeledRows = dayLabeledRows.map(r => {
-            r.unshift(sheet.data.sheetTitle);
+            r.unshift(parseInt(sheet.data.sheetTitle.replace(/\D/g, '')));
             return r;
         });
         return weekLabeledRows;
@@ -55,11 +56,13 @@ function labelDays(cleanedRows) {
 
 
 function downloadSheetsAsync(spreadsheetId, sheetTitles, sheetsClient) {
-    sheetTitles = sheetTitles.slice(0, 10); // uncomment when ready to process them all
+    //sheetTitles = sheetTitles.slice(0, 1); // uncomment when ready to process them all
 
     const getSheetAsync = promisify(sheetsClient.spreadsheets.values.get);
 
     const sheetPromises = sheetTitles.map(sheetTitle => {
+        sleep(500);
+        console.log(`getting sheet: ${sheetTitle}`)
         return getSheetAsync({
             spreadsheetId: spreadsheetId,
             range: sheetTitle,
