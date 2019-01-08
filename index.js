@@ -2,7 +2,7 @@ const fs = require('fs');
 const { google } = require('googleapis');
 const authorize = require('./authorize')
 const { promisify } = require('util');
-const { isRowEmpty, stripBodyWeightRows, extractAndLabelDay } = require('./rowProcessing')
+const { isRowEmpty, stripBodyWeightRows, extractDay } = require('./rowProcessing')
 const { convertArrayToCSV } = require('convert-array-to-csv');
 const sleep = require('system-sleep');
 
@@ -33,35 +33,41 @@ function downloadSpreadsheetAsync(spreadsheetId, auth) {
         .then(cleanedSheetPromises => Promise.all(cleanedSheetPromises))
         .then(cleanedSheets => cleanedSheets.sort((x, y) => x[0][0] > y[0][0]))
         .then(cleanedSheets => cleanedSheets.reduce((prev, curr) => prev.concat(curr), []))
-        .then(cleanedRows => fs.writeFile(`./data/spreadsheet-export-${new Date().getTime()}`, convertArrayToCSV(cleanedRows)));
+        .then(cleanedRows => addHeaders(cleanedRows))
+        .then(cleanedRows => writeData(cleanedRows));
 }
 
 function cleanSheet(sheetPromise) {
-
     return sheetPromise.then(sheet => {
         const rows = sheet.data.values;
         const cleanedRows = stripBodyWeightRows(rows.filter(r => !isRowEmpty(r)));
-        const dayLabeledRows = labelDays(cleanedRows, 1);
+        const specialCharsRemovedRows = cleanedRows.map(row => row.map(cell => typeof cell === "string" ? cell.replace(/["]*/g, "") : cell));
+        const dayLabeledRows = extractDays(specialCharsRemovedRows, 1);
         const weekLabeledRows = dayLabeledRows.map(r => {
             r.unshift(parseInt(sheet.data.sheetTitle.replace(/\D/g, '')));
             return r;
         });
+
         return weekLabeledRows;
     });
 }
 
-function labelDays(cleanedRows) {
-    return extractAndLabelDay(cleanedRows, 1).concat(extractAndLabelDay(cleanedRows, 2)).concat(extractAndLabelDay(cleanedRows, 3)).concat(extractAndLabelDay(cleanedRows, 4));
+function extractDays(cleanedRows) {
+    return extractDay(cleanedRows, 1).concat(extractDay(cleanedRows, 2)).concat(extractDay(cleanedRows, 3)).concat(extractDay(cleanedRows, 4));
 }
 
 
+function writeData(rows) {
+    fs.writeFile(`./data/spreadsheet-export-${new Date().getTime()}.csv`, convertArrayToCSV(rows))
+}
+
 function downloadSheetsAsync(spreadsheetId, sheetTitles, sheetsClient) {
-    //sheetTitles = sheetTitles.slice(0, 1); // uncomment when ready to process them all
+    //sheetTitles = sheetTitles.slice(0, 2); // comment when ready to process them all
 
     const getSheetAsync = promisify(sheetsClient.spreadsheets.values.get);
 
     const sheetPromises = sheetTitles.map(sheetTitle => {
-        sleep(500);
+        sleep(200);
         console.log(`getting sheet: ${sheetTitle}`)
         return getSheetAsync({
             spreadsheetId: spreadsheetId,
@@ -73,4 +79,9 @@ function downloadSheetsAsync(spreadsheetId, sheetTitles, sheetsClient) {
     });
 
     return sheetPromises;
+}
+
+function addHeaders(rows) {
+    rows.unshift(["Week", "Day", "Exercise", "Sets", "Reps", "Instructions", "Weight", "Notes"])
+    return rows;
 }

@@ -12,7 +12,7 @@ function stripBodyWeightRows(rows){
     return rows.slice(0, startIndex);
 }
 
-function extractAndLabelDay(rows, day) {
+function extractDay(rows, day) {
     const searchString = `Day ${day}`;
     const startIndex = rows.findIndex(row => row.length > 0 && row[0] === searchString)
     const endIndex = rows.findIndex((row, index) => index > startIndex && row.length > 0 && !isCellEmpty(row[0]));
@@ -28,5 +28,5 @@ module.exports = {
     isCellEmpty,
     isRowEmpty,
     stripBodyWeightRows,
-    extractAndLabelDay
+    extractDay
 }
