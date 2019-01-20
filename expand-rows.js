@@ -2,11 +2,8 @@ const fs = require('fs');
 const csv = require('csvtojson');
 const uuid = require('uuid/v4');
 
-csv().fromFile('./data/spreadsheet-export-1546914442784.csv').then(rows => {
-    //const rows = rows.slice(0, 20);
-
-
-
+csv().fromFile('./data/spreadsheet-export-1547955512514.csv').then(rows => {
+    //rows = rows.slice(0, 5);
 
     const strategies = [
         noWeightStraightSetStrategy,
@@ -28,7 +25,7 @@ csv().fromFile('./data/spreadsheet-export-1546914442784.csv').then(rows => {
                 }
             }
             catch (ex) {
-                console.log(row.Exercise, ex);
+                console.log(row.exercise, ex);
             }
         }
     }
@@ -41,14 +38,14 @@ function noWeightStraightSetStrategy(row) {
 
 
     function canHandle(row) {
-        return !isNaN(Number(row.Reps))
-            && !isNaN(Number(row.Sets))
-            && (row.Weight === undefined || row.Weight === null || row.Weight.trim() === "");
+        return !isNaN(Number(row.reps))
+            && !isNaN(Number(row.sets))
+            && (row.weight === undefined || row.weight === null || row.weight.trim() === "");
     }
 
     if (canHandle(row)) {
         const sets = [];
-        for (let i = 0; i < row.Sets; i++) {
+        for (let i = 0; i < row.sets; i++) {
             sets.push(new ActivitySet(row, i + 1, noWeightStraightSetStrategy));
         }
         return sets;
@@ -60,14 +57,14 @@ function noWeightStraightSetStrategy(row) {
 function straightSetStrategy(row) {
 
     function canHandle(row) {
-        return !isNaN(Number(row.Reps))
-            && !isNaN(Number(row.Sets))
-            && !isNaN(Number(row.Weight));
+        return !isNaN(Number(row.reps))
+            && !isNaN(Number(row.sets))
+            && !isNaN(Number(row.weight));
     }
 
     if (canHandle(row)) {
         const sets = [];
-        for (let i = 0; i < row.Sets; i++) {
+        for (let i = 0; i < row.sets; i++) {
             sets.push(new ActivitySet(row, i + 1, straightSetStrategy));
         }
         return sets;
@@ -79,16 +76,16 @@ function straightSetStrategy(row) {
 function compoundSetStrategy(row) {
 
     function canHandle(row) {
-        return row.Reps.toString().match(/^(\d+)\+(\d+)$/) !== null
-            && !isNaN(Number(row.Sets))
-            && !isNaN(Number(row.Weight));
+        return row.reps.toString().match(/^(\d+)\+(\d+)$/) !== null
+            && !isNaN(Number(row.sets))
+            && !isNaN(Number(row.weight));
     }
 
     if (canHandle(row)) {
         const sets = [];
-        const matches = row.Reps.toString().match(/^(\d+)\+(\d+)$/);
+        const matches = row.reps.toString().match(/^(\d+)\+(\d+)$/);
         const reps = Number(matches[1]) + Number(matches[2]);
-        for (let i = 0; i < row.Sets; i++) {
+        for (let i = 0; i < row.sets; i++) {
             const set = new ActivitySet(row, i + 1, straightSetStrategy);
             set.reps = reps;
             sets.push(set);
@@ -123,12 +120,12 @@ function differentWeightsPerSetStrategy(row) {
     function canHandle(row, validWeightForSets) {
 
         return validWeightForSets
-            && !isNaN(Number(row.Sets))
-            && !isNaN(Number(row.Reps));
+            && !isNaN(Number(row.sets))
+            && !isNaN(Number(row.reps));
     }
 
-    const weightForSets = parseWeightColumn(row.Weight.toString());
-    const validWeightForSets = isWeightForSetsValid(weightForSets, Number(row.Sets));
+    const weightForSets = parseWeightColumn(row.weight.toString());
+    const validWeightForSets = isWeightForSetsValid(weightForSets, Number(row.sets));
 
     if (canHandle(row, validWeightForSets)) {
         const sets = [];
@@ -137,9 +134,9 @@ function differentWeightsPerSetStrategy(row) {
             set.weight = weightForSets[i];
             sets.push(set);
         }
-        // const matches = row.Reps.toString().match(/^(\d+)\+(\d+)$/);
+        // const matches = row.reps.toString().match(/^(\d+)\+(\d+)$/);
         // const reps = Number(matches[1]) + Number(matches[2]);
-        // for (let i = 0; i < row.Sets; i++) {
+        // for (let i = 0; i < row.sets; i++) {
         //     const set = new ActivitySet(row, i + 1, straightSetStrategy);
         //     set.reps = reps;
         //     sets.push(set);
@@ -160,14 +157,15 @@ function catchAllStrategy(row) {
 class ActivitySet {
     constructor(row, setNumber, strategyUsed) {
         this.id = uuid();
-        this.week = row.Week;
-        this.day = row.Day;
-        this.exercise = row.Exercise;
+        this.week = row.week;
+        this.day = row.day;
+        this.exercise = row.exercise;
         this.setNumber = setNumber;
-        this.reps = Number(row.Reps);
-        this.instructions = row.Instructions;
-        this.weight = Number(row.Weight);
-        this.notes = row.Notes;
+        this.reps = Number(row.reps);
+        this.instructions = row.instructions;
+        this.weight = Number(row.weight);
+        this.notes = row.notes;
+        this.supersetId = row.supersetId
         this.anomalous = false;
         this.strategyUsed = strategyUsed
     }
