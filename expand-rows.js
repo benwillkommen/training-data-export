@@ -6,14 +6,19 @@ const { convertArrayToCSV } = require('convert-array-to-csv');
 
 const TRAINING_DATA_DIR = process.env.TRAINING_DATA_DIR || "./data"
 
-csv().fromFile(`${TRAINING_DATA_DIR}/spreadsheet-export-1547955512514.csv`).then(rows => {
-    //rows = rows.slice(0, 5);
+csv().fromFile(`${TRAINING_DATA_DIR}/clean-phase-1/1548110286232.csv`).then(rows => {
+    //rows = rows.filter(r => (r.week === "149" && r.exercise === "Single Legged DB RDLs"));
+    // rows = rows.filter(r => (r.week === "95" && r.exercise === "Seated Machine Press")
+    //                         || (r.week === "116" && r.exercise === "Leg Press"));
 
     const strategies = [
         noWeightStraightSetStrategy,
         straightSetStrategy,
         compoundSetStrategy,
+        finalSetDropSetStrategy,
         differentWeightsPerSetStrategy,
+        differentRepsPerSetsStrategy,
+        bodyweightUntilFailureStrategy,
         catchAllStrategy];
 
     let sets = []
@@ -29,7 +34,7 @@ csv().fromFile(`${TRAINING_DATA_DIR}/spreadsheet-export-1547955512514.csv`).then
                 }
             }
             catch (ex) {
-                console.log(row.exercise, ex);
+                //console.log(row.exercise, ex);
             }
         }
     }
@@ -144,6 +149,47 @@ function differentWeightsPerSetStrategy(row) {
     return false;
 }
 
+function differentRepsPerSetsStrategy(row) {
+
+    function canHandle(row, validRepsForSets) {
+        return validRepsForSets
+            && !isNaN(Number(row.sets))
+            && !isNaN(Number(row.weight));
+    }
+
+    function parseRepsColumn(repsColumn) {
+        const tokens = repsColumn.split(",");
+        const repsForSets = tokens
+            .map(token => token.trim().split("x").map(t => Number(t)))
+            .map(pair => pair.length === 1 ? pair.concat(1) : pair)
+            .reduce((collection, nextPair) => {
+                const sets = [];
+                for (let i = 0; i < nextPair[1]; i++) {
+                    sets.push(nextPair[0])
+                }
+                return collection.concat(sets);
+            }, []);
+        return repsForSets;
+    }
+
+    function areRepsValidForSets(repsForSets, sets) {
+        return sets === repsForSets.length;
+    }
+
+    const repsForSets = parseRepsColumn(row.reps.toString());
+    const validRepsForSets = areRepsValidForSets(repsForSets, Number(row.sets));
+
+    if (canHandle(row, validRepsForSets)) {
+        return repsForSets.map((r, i) => {
+            const set = new ActivitySet(row, i + 1, "differentRepsPerSetsStrategy")
+            set.reps = r;
+            return set;
+        });
+
+    }
+    return false;
+}
+
 function catchAllStrategy(row) {
     const set = new ActivitySet(row, undefined, "catchAllStrategy");
     set.anomalous = true;
@@ -151,20 +197,91 @@ function catchAllStrategy(row) {
     return [set];
 }
 
+function finalSetDropSetStrategy(row) {
+    function isFinalDropDownSet(instructions) {
+        const i = instructions.toLowerCase();
+        if (i.match(/drop\s?(down|set)/) && i.match(/final set|last set/)) {
+            return true;
+        }
+        return false;
+    }
+
+    function parseDropSetWeight(weightColumn) {
+        const tokens = weightColumn.split(",");
+        if (tokens.every(t => !isNaN(Number(t)))) {
+            return tokens.map(t => Number(t));
+        }
+        return false;
+    }
+
+    function canHandle(row, parsedWeights) {
+        return isFinalDropDownSet(row.instructions)
+            && !isNaN(Number(row.sets))
+            && parsedWeights !== false;
+    }
+
+    const parsedWeights = parseDropSetWeight(row.weight.toString());
+
+    if (canHandle(row, parsedWeights)) {
+        return parsedWeights.reduce((agg, nextWeight, i) => {
+            if (i === 0) {
+                return agg.concat(
+                    [...Array(Number(row.sets))]
+                        .map((el, i) => new ActivitySet(row, i + 1, "finalSetDropSetStrategy", null, Number(nextWeight), i + 1 === Number(row.sets)? uuid() : null))
+                )
+            }
+            return agg.concat(new ActivitySet(row, agg.slice(-1)[0].setNumber + 1, "finalSetDropSetStrategy", null, Number(nextWeight), agg.slice(-1)[0].dropSetId))
+        }, []);
+    }
+
+    return false;
+}
+
+
+function bodyweightUntilFailureStrategy(row) {
+
+    function splitCommaSeparatedReps(cell) {
+        const reps = cell.split(',');
+        if (reps.every(x => !isNaN(Number(x)))) {
+            return reps.map(x => Number(x));
+        }
+        return false;
+    }
+
+    function canHandle(row) {
+        return row.reps.toString().toLowerCase().trim().match(/^failure$|^max$/)
+            && !isNaN(Number(row.sets))
+            && splitCommaSeparatedReps(row.weight.toString().trim()) !== false;
+    }
+
+    if (canHandle(row)) {
+        const repsForEachSet = splitCommaSeparatedReps(row.weight.toString().trim());
+        return repsForEachSet.map((r, i) => {
+            const rowCopy = JSON.parse(JSON.stringify(row));
+            rowCopy.reps = r;
+            rowCopy.weight = "";
+            return new ActivitySet(rowCopy, i + 1, "bodyweightUntilFailureStrategy");
+        });
+    }
+
+    return false;
+}
+
 class ActivitySet {
-    constructor(row, setNumber, strategyUsed) {
+    constructor(row, setNumber, strategyUsed, reps, weight, dropSetId) {
         this.id = uuid();
         this.week = row.week;
         this.day = row.day;
         this.exercise = row.exercise;
         this.setNumber = setNumber;
-        this.reps = Number(row.reps);
+        this.reps = Number(reps) || Number(row.reps);
         this.instructions = row.instructions;
-        this.weight = Number(row.weight);
+        this.weight = Number(weight) || Number(row.weight);
         this.notes = row.notes;
         this.supersetId = row.supersetId
         this.anomalous = false;
-        this.strategyUsed = strategyUsed
+        this.strategyUsed = strategyUsed,
+        this.dropSetId = dropSetId
     }
 }
 
