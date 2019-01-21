@@ -1,8 +1,12 @@
-const fs = require('fs');
+const fse = require('fs-extra');
 const csv = require('csvtojson');
 const uuid = require('uuid/v4');
+const { convertArrayToCSV } = require('convert-array-to-csv');
 
-csv().fromFile('./data/spreadsheet-export-1547955512514.csv').then(rows => {
+
+const TRAINING_DATA_DIR = process.env.TRAINING_DATA_DIR || "./data"
+
+csv().fromFile(`${TRAINING_DATA_DIR}/spreadsheet-export-1547955512514.csv`).then(rows => {
     //rows = rows.slice(0, 5);
 
     const strategies = [
@@ -30,12 +34,12 @@ csv().fromFile('./data/spreadsheet-export-1547955512514.csv').then(rows => {
         }
     }
     console.log(sets.filter(s => s.anomalous));
+    const filePath = `${TRAINING_DATA_DIR}/clean-phase-2/${new Date().getTime()}.csv`;
+    fse.outputFile(filePath, convertArrayToCSV(sets))
 
 })
 
 function noWeightStraightSetStrategy(row) {
-
-
 
     function canHandle(row) {
         return !isNaN(Number(row.reps))
@@ -46,7 +50,7 @@ function noWeightStraightSetStrategy(row) {
     if (canHandle(row)) {
         const sets = [];
         for (let i = 0; i < row.sets; i++) {
-            sets.push(new ActivitySet(row, i + 1, noWeightStraightSetStrategy));
+            sets.push(new ActivitySet(row, i + 1, "noWeightStraightSetStrategy"));
         }
         return sets;
     }
@@ -65,7 +69,7 @@ function straightSetStrategy(row) {
     if (canHandle(row)) {
         const sets = [];
         for (let i = 0; i < row.sets; i++) {
-            sets.push(new ActivitySet(row, i + 1, straightSetStrategy));
+            sets.push(new ActivitySet(row, i + 1, "straightSetStrategy"));
         }
         return sets;
     }
@@ -86,7 +90,7 @@ function compoundSetStrategy(row) {
         const matches = row.reps.toString().match(/^(\d+)\+(\d+)$/);
         const reps = Number(matches[1]) + Number(matches[2]);
         for (let i = 0; i < row.sets; i++) {
-            const set = new ActivitySet(row, i + 1, straightSetStrategy);
+            const set = new ActivitySet(row, i + 1, "compoundSetStrategy");
             set.reps = reps;
             sets.push(set);
         }
@@ -130,17 +134,10 @@ function differentWeightsPerSetStrategy(row) {
     if (canHandle(row, validWeightForSets)) {
         const sets = [];
         for (let i = 0; i < weightForSets.length; i++) {
-            const set = new ActivitySet(row, i + 1, differentWeightsPerSetStrategy);
+            const set = new ActivitySet(row, i + 1, "differentWeightsPerSetStrategy");
             set.weight = weightForSets[i];
             sets.push(set);
         }
-        // const matches = row.reps.toString().match(/^(\d+)\+(\d+)$/);
-        // const reps = Number(matches[1]) + Number(matches[2]);
-        // for (let i = 0; i < row.sets; i++) {
-        //     const set = new ActivitySet(row, i + 1, straightSetStrategy);
-        //     set.reps = reps;
-        //     sets.push(set);
-        // }
         return sets;
     }
 
@@ -148,7 +145,7 @@ function differentWeightsPerSetStrategy(row) {
 }
 
 function catchAllStrategy(row) {
-    const set = new ActivitySet(row, undefined, catchAllStrategy);
+    const set = new ActivitySet(row, undefined, "catchAllStrategy");
     set.anomalous = true;
     set.originalData = row;
     return [set];

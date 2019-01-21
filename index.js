@@ -11,6 +11,8 @@ const sleep = require('system-sleep');
 const SPREADSHEET_ID = process.argv[2] || '1Au638nEKSAa2xl8WucH_XW3tw8urKooXJHr9kmlkf1E'
 const TRAINING_DATA_DIR = process.env.TRAINING_DATA_DIR || "./data"
 
+const COLUMN_HEADERS = ["week", "day", "exercise", "sets", "reps", "instructions", "weight", "notes", "supersetId"];
+
 // Load client secrets from a local file.
 fs.readFile('credentials.json', (err, content) => {
     if (err) return console.log('Error loading client secret file:', err);
@@ -38,13 +40,23 @@ function downloadSpreadsheetAsync(spreadsheetId, auth) {
         .then(cleanedSheetPromises => Promise.all(cleanedSheetPromises))
         .then(cleanedSheets => cleanedSheets.sort((x, y) => x[0][0] > y[0][0]))
         .then(cleanedSheets => cleanedSheets.reduce((prev, curr) => prev.concat(curr), []))
+        .then(cleanedRows => ensureAllColumnsExist(cleanedRows))
         .then(cleanedRows => associateSuperSets(cleanedRows))
         .then(cleanedRows => addHeaders(cleanedRows))
         .then(cleanedRows => writeData(cleanedRows));
 }
 
+function ensureAllColumnsExist(rows){
+    return rows.map(r => {
+        const fillerArray = [];
+        for (let i = 0; i < COLUMN_HEADERS.length - r.length; i++){
+            fillerArray.push("");
+        }
+        return r.concat(fillerArray);
+    });
+}
+
 function associateSuperSets(cleanedRows) {
-    console.log("here");
 
     const superSetIndices = cleanedRows
         .map((row, i) => { return { value: row[2].toLowerCase().trim(), index: i } })
@@ -77,10 +89,10 @@ function associateSuperSets(cleanedRows) {
     const rowsWithAssociatedSuperSets = cleanedRows.map((row, i) => {
         for (let superSetRange of superSetRanges) {
             if (i >= superSetRange.start && i <= superSetRange.end) {
-                return row.concat(superSetRange.id);
+                return row.slice(0, -1).concat(superSetRange.id);
             }
         }
-        return row.concat("")
+        return row.slice(0, -1).concat("")
     }).filter((row, i) => !superSetIndices.includes(i));
 
     return rowsWithAssociatedSuperSets
@@ -136,6 +148,6 @@ function downloadSheetsAsync(spreadsheetId, sheetTitles, sheetsClient, downloadB
 }
 
 function addHeaders(rows) {
-    rows.unshift(["week", "day", "exercise", "sets", "reps", "instructions", "weight", "notes", "supersetId"])
+    rows.unshift(COLUMN_HEADERS)
     return rows;
 }
