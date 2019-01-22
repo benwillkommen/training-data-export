@@ -34,7 +34,9 @@ function downloadSpreadsheetAsync(spreadsheetId, auth) {
     const downloadBatchDirectoryName = `batch-${new Date().getTime()}`;
 
     getSpreadsheetAsync({ spreadsheetId })
-        .then(res => res.data.sheets.map(s => s.properties.title))
+        .then(res => {
+            return res.data.sheets.map(s => s.properties.title).slice(1);
+        })
         .then(sheetTitles => downloadSheetsAsync(spreadsheetId, sheetTitles, sheetsClient, downloadBatchDirectoryName))
         .then(sheetPromises => sheetPromises.map(cleanSheet))
         .then(cleanedSheetPromises => Promise.all(cleanedSheetPromises))
@@ -46,10 +48,10 @@ function downloadSpreadsheetAsync(spreadsheetId, auth) {
         .then(cleanedRows => writeData(cleanedRows));
 }
 
-function ensureAllColumnsExist(rows){
+function ensureAllColumnsExist(rows) {
     return rows.map(r => {
         const fillerArray = [];
-        for (let i = 0; i < COLUMN_HEADERS.length - r.length; i++){
+        for (let i = 0; i < COLUMN_HEADERS.length - r.length; i++) {
             fillerArray.push("");
         }
         return r.concat(fillerArray);
