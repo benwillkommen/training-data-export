@@ -23,6 +23,7 @@ csv().fromFile(`${TRAINING_DATA_DIR}/clean-phase-1/1548211486743.csv`).then(rows
         differentRepsPerSetsStrategy,
         failureSpecifiedInRepsColumnAndNoWeightStrategy,
         //failureSpecifiedInRepsColumnStrategy,
+        repRangeInParenthesisStrategy,
         catchAllStrategy];
 
     let sets = []
@@ -398,6 +399,11 @@ function failureSpecifiedInRepsColumnAndNoWeightStrategy(row) {
         });
     }
 
+    return false;
+}
+
+function repRangeInParenthesisStrategy(row) {
+    // TODO
     return false;
 }
 

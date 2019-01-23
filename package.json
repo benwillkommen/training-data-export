@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node .",
-    "expand": "node expand-rows",
+    "start": "node process-rows",
+    "row-cells": "node process-row-cells",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",

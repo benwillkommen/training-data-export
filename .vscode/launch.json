@@ -3,19 +3,18 @@
     // Hover to view descriptions of existing attributes.
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
-    "configurations": [
-        
+    "configurations": [        
         {
-            "name": "Launch expand",
+            "name": "Launch process-rows.js",
             "type": "node",
             "request": "launch",
-            "program": "${workspaceFolder}\\expand-rows.js"
+            "program": "${workspaceFolder}\\process-rows.js"
         },
         {
             "type": "node",
             "request": "launch",
-            "name": "Launch index",
-            "program": "${workspaceFolder}\\index.js"
+            "name": "Launch process-row-cells.js",
+            "program": "${workspaceFolder}\\process-row-cells.js"
         }
     ]
 }
