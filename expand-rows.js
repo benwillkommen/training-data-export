@@ -6,7 +6,8 @@ const { convertArrayToCSV } = require('convert-array-to-csv');
 
 const TRAINING_DATA_DIR = process.env.TRAINING_DATA_DIR || "./data"
 
-csv().fromFile(`${TRAINING_DATA_DIR}/clean-phase-1/1548120663309.csv`).then(rows => {
+csv().fromFile(`${TRAINING_DATA_DIR}/clean-phase-1/1548211486743.csv`).then(rows => {
+    //rows = rows.filter(s => s.reps.includes("failure"));
     //rows = rows.filter(r => (r.week === "139" && r.exercise === "Incline DB Flyes"));
     // rows = rows.filter(r => (r.week === "95" && r.exercise === "Seated Machine Press")
     //                         || (r.week === "116" && r.exercise === "Leg Press"));
@@ -20,7 +21,8 @@ csv().fromFile(`${TRAINING_DATA_DIR}/clean-phase-1/1548120663309.csv`).then(rows
         plusSignDelimitedRepsDropSetStrategy,
         differentWeightsPerSetStrategy,
         differentRepsPerSetsStrategy,
-        bodyweightUntilFailureStrategy,
+        failureSpecifiedInRepsColumnAndNoWeightStrategy,
+        //failureSpecifiedInRepsColumnStrategy,
         catchAllStrategy];
 
     let sets = []
@@ -279,7 +281,7 @@ function plusSignDelimitedRepsDropSetStrategy(row) {
 
     function parseDropSetReps(repsColumn) {
         const tokens = repsColumn.split("+");
-        if (tokens.length < 2){
+        if (tokens.length < 2) {
             // let's only handle "+"" delimited reps with this strategy
             return false;
         }
@@ -370,7 +372,7 @@ function dropSetStrategy(row) {
     return false;
 }
 
-function bodyweightUntilFailureStrategy(row) {
+function failureSpecifiedInRepsColumnAndNoWeightStrategy(row) {
 
     function splitCommaSeparatedReps(cell) {
         const reps = cell.split(',');
