@@ -1,6 +1,7 @@
 const fs = require('fs');
 const readline = require('readline');
 const { google } = require('googleapis');
+const { promisify } = require('util');
 
 // If modifying these scopes, delete token.json.
 const SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly'];
@@ -26,6 +27,23 @@ function authorize(credentials, callback) {
         oAuth2Client.setCredentials(JSON.parse(token));
         callback(oAuth2Client);
     });
+}
+
+async function getAuthClientAsync(credentials) {
+    const { client_secret, client_id, redirect_uris } = credentials.installed;
+    const oAuth2Client = new google.auth.OAuth2(
+        client_id, client_secret, redirect_uris[0]);
+
+    const readFileAsync = promisify(fs.readFile);
+
+    return readFileAsync(TOKEN_PATH)
+        .then(token => {
+            oAuth2Client.setCredentials(JSON.parse(token));
+            return oAuth2Client;
+        })
+        .catch(async err => {
+            return await refreshAuthClientTokenAsync(oAuth2Client)
+        });
 }
 
 /**
@@ -59,4 +77,35 @@ function getNewToken(oAuth2Client, callback) {
     });
 }
 
-module.exports = authorize;
+async function refreshAuthClientTokenAsync(oAuth2Client) {
+    const authUrl = oAuth2Client.generateAuthUrl({
+        access_type: 'offline',
+        scope: SCOPES,
+    });
+    console.log('Authorize this app by visiting this url:', authUrl);
+    const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout,
+    });
+
+    return new Promise((resolve, reject) => {
+        rl.question('Enter the code from that page here: ', (code) => {
+            resolve(new Promise((resolve, reject) => {
+                oAuth2Client.getToken(code, async (err, token) => {
+                    if (err) {
+                        console.error('Error while trying to retrieve access token', err);
+                        return reject(err);
+                    }
+
+                    oAuth2Client.setCredentials(token);
+
+                    const writeFileAsync = promisify(fs.writeFile);
+                    await writeFileAsync(TOKEN_PATH, JSON.stringify(token));
+                    resolve(oAuth2Client);
+                });
+            }));
+        })
+    });
+}
+
+module.exports = { authorize, getAuthClientAsync };
