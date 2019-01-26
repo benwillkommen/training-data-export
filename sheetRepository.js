@@ -1,9 +1,9 @@
 const { promisify } = require('util');
 const sleep = require('system-sleep');
-const fse = require('fs-extra');
+const fs = require('fs-extra');
 const { TRAINING_DATA_DIR } = require('./constants');
 
-function getSheetPromises(spreadsheetId, sheetsClient) {
+function getSheetPromisesFromGoogleDrive(spreadsheetId, sheetsClient) {
     const getSpreadsheetAsync = promisify(sheetsClient.spreadsheets.get);
     return getSpreadsheetAsync({ spreadsheetId })
         .then(res => {
@@ -12,36 +12,53 @@ function getSheetPromises(spreadsheetId, sheetsClient) {
         });
 }
 
-function persistSheetPromises(sheetPromises) {
+async function getSheetsFromGoogleDrive(spreadsheetId, sheetsClient) {
+    const sheetPromises = await getSheetPromisesFromGoogleDrive(spreadsheetId, sheetsClient);
+    return Promise.all(sheetPromises);
+}
+
+async function persistSheetsToFileSystem(sheets) {
     const downloadBatchDirectoryName = `batch-${new Date().getTime()}`;
-    return Promise.all(sheetPromises.map(sp => {
-        return sp.then(async s => {
-            const filePath = `${TRAINING_DATA_DIR}/sheet-json-responses/${downloadBatchDirectoryName}/${s.data.sheetTitle}.json`;
-            await fse.outputFile(filePath, JSON.stringify(s.data, null, 3));
-            return s;
-        })
+    const sheetDirectory = `${TRAINING_DATA_DIR}/sheet-json-responses/${downloadBatchDirectoryName}`;
+    const persistedSheets = await Promise.all(sheets.map(async s => {
+        const filePath = `${sheetDirectory}/${s.sheetTitle}.json`;
+        await fs.outputFile(filePath, JSON.stringify(s, null, 3));
+
+        return s;
     }));
+
+    return {
+        persistedSheets,
+        sheetDirectory
+    }
+}
+
+async function persistSheetPromisesToFileSystem(sheetPromises) {
+    return persistSheetsToFileSystem(await Promise.all(sheetPromises));
 }
 
 function getIndividualSheetsAsync(spreadsheetId, sheetTitles, sheetsClient) {
-    //sheetTitles = sheetTitles.filter(title => title === "Week 99"); // comment when ready to process them all
+    // uncomment if getting rate limited during dev
+    sheetTitles = sheetTitles.slice(0, 10);
 
     const getSheetAsync = promisify(sheetsClient.spreadsheets.values.get);
 
     return sheetTitles.map(sheetTitle => {
-        sleep(200);
+        sleep(500);
         console.log(`getting sheet: ${sheetTitle}`)
         return getSheetAsync({
             spreadsheetId: spreadsheetId,
             range: sheetTitle,
         }).then(s => {
             s.data.sheetTitle = sheetTitle;
-            return s;
+            return s.data;
         });
     });
 }
 
 module.exports = {
-    getSheetPromises,
-    persistSheetPromises
+    getSheetPromisesFromGoogleDrive,
+    persistSheetPromisesToFileSystem,
+    getSheetsFromGoogleDrive,
+    persistSheetsToFileSystem
 };

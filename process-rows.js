@@ -1,28 +1,48 @@
-const fs = require('fs');
-const fse = require('fs-extra');
+const fs = require('fs-extra');
+const { promisify } = require('util');
+const fsAsync = {
+    readFile: promisify(fs.readFile),
+    readdir: promisify(fs.readdir)
+}
 const uuid = require('uuid');
 const { google } = require('googleapis');
 const { getAuthClientAsync } = require('./authorize')
-const { promisify } = require('util');
 const { isRowEmpty, stripBodyWeightRows, extractDay } = require('./rowProcessing')
 const { convertArrayToCSV } = require('convert-array-to-csv');
 const sleep = require('system-sleep');
-const { getSheetPromises, persistSheetPromises } = require('./sheetRepository');
+const sheetRepository = require('./sheetRepository');
 
 const SPREADSHEET_ID = process.argv[2] || '1Au638nEKSAa2xl8WucH_XW3tw8urKooXJHr9kmlkf1E';
 const { TRAINING_DATA_DIR, COLUMN_HEADERS } = require('./constants');
 
-
 (async function () {
-    const readFileAsync = promisify(fs.readFile);
-    const credentials = JSON.parse(await readFileAsync('credentials.json'));
+    //cleanRows(`c:\\dev\\training-data-export\\data\\sheet-json-responses\\batch-1548516671261`);
+
+    const credentials = JSON.parse(await fsAsync.readFile('credentials.json'));
     const authClient = await getAuthClientAsync(credentials);
     const sheetsClient = google.sheets({ version: 'v4', auth: authClient });
 
-    const sheetPromises = await getSheetPromises(SPREADSHEET_ID, sheetsClient);
-    persistSheetPromises(sheetPromises);
+    const sheetsFromGoogleDrive = await sheetRepository.getSheetsFromGoogleDrive(SPREADSHEET_ID, sheetsClient);
+    const { persistedSheets, sheetDirectory } = await sheetRepository.persistSheetsToFileSystem(sheetsFromGoogleDrive);
+
+    cleanRows(sheetsFromGoogleDrive);
+    cleanRows(sheetDirectory);
+
     //shittyDownloadSpreadsheetAsync(SPREADSHEET_ID, authClient);
 })();
+
+async function cleanRows(sheets) {
+    let _sheets;
+    if (typeof sheets === "string") {
+        const sheetJsonFileNames = await fsAsync.readdir(sheets);
+        _sheets = await Promise.all(sheetJsonFileNames.map(async (fileName) => {
+            return JSON.parse(await fsAsync.readFile(`${sheets}\\${fileName}`));
+        }));
+    }
+    else {
+        _sheets = sheets;
+    }
+}
 
 
 function shittyDownloadSpreadsheetAsync(spreadsheetId, auth) {
@@ -121,7 +141,7 @@ function extractDays(cleanedRows) {
 
 function writeData(rows) {
     const filePath = `${TRAINING_DATA_DIR}/clean-phase-1/${new Date().getTime()}.csv`;
-    fse.outputFile(filePath, convertArrayToCSV(rows))
+    fs.outputFile(filePath, convertArrayToCSV(rows))
 }
 
 function downloadSheetsAsync(spreadsheetId, sheetTitles, sheetsClient, downloadBatchDirectoryName) {
@@ -140,7 +160,7 @@ function downloadSheetsAsync(spreadsheetId, sheetTitles, sheetsClient, downloadB
             return s;
         }).then(s => {
             const filePath = `${TRAINING_DATA_DIR}/sheet-json-responses/${downloadBatchDirectoryName}/${s.data.sheetTitle}.json`;
-            fse.outputFile(filePath, JSON.stringify(s.data, null, 3));
+            fs.outputFile(filePath, JSON.stringify(s.data, null, 3));
             return s;
         });
     });
