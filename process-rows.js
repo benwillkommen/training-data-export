@@ -11,37 +11,43 @@ const { isRowEmpty, stripBodyWeightRows, extractDay } = require('./rowProcessing
 const { convertArrayToCSV } = require('convert-array-to-csv');
 const sleep = require('system-sleep');
 const sheetRepository = require('./sheetRepository');
+const {consolidate: consolidateSheet} = require('./sheetConsolidation')
 
 const SPREADSHEET_ID = process.argv[2] || '1Au638nEKSAa2xl8WucH_XW3tw8urKooXJHr9kmlkf1E';
 const { TRAINING_DATA_DIR, COLUMN_HEADERS } = require('./constants');
 
 (async function () {
-    //cleanRows(`c:\\dev\\training-data-export\\data\\sheet-json-responses\\batch-1548516671261`);
+    const sheets = await sheetRepository.getSheetsFromFileSystem("C:\\dev\\training-data-export\\data\\sheet-json-responses\\batch-1548518308304");
 
-    const credentials = JSON.parse(await fsAsync.readFile('credentials.json'));
-    const authClient = await getAuthClientAsync(credentials);
-    const sheetsClient = google.sheets({ version: 'v4', auth: authClient });
+    // just going to read from file system for now, since repository methods return same results whether
+    // reading from google drive or file system
+    // const credentials = JSON.parse(await fsAsync.readFile('credentials.json'));
+    // const authClient = await getAuthClientAsync(credentials);
+    // const sheetsClient = google.sheets({ version: 'v4', auth: authClient });
 
-    const sheetsFromGoogleDrive = await sheetRepository.getSheetsFromGoogleDrive(SPREADSHEET_ID, sheetsClient);
-    const { persistedSheets, sheetDirectory } = await sheetRepository.persistSheetsToFileSystem(sheetsFromGoogleDrive);
+    // const sheetsFromGoogleDrive = await sheetRepository.getSheetsFromGoogleDrive(SPREADSHEET_ID, sheetsClient);
+    // const { persistedSheets, batchPath } = await sheetRepository.persistSheetsToFileSystem(sheetsFromGoogleDrive);
 
-    cleanRows(sheetsFromGoogleDrive);
-    cleanRows(sheetDirectory);
+
+    // const sheetsFromFileSystem = await sheetRepository.getSheetsFromFileSystem(batchPath);
+
+    const cleanedSheets = cleanSheets(sheets);
+    const rows = flattenSheets(cleanedSheets);
+    const rowsWithAllColumns = ensureAllColumnsExist(rows);
+    const rowsWithAssociatedSupersets = associateSuperSets(rowsWithAllColumns);
+    const cleanedRows = addHeaders(rowsWithAssociatedSupersets);
+    await writeData(cleanedRows);
 
     //shittyDownloadSpreadsheetAsync(SPREADSHEET_ID, authClient);
 })();
 
-async function cleanRows(sheets) {
-    let _sheets;
-    if (typeof sheets === "string") {
-        const sheetJsonFileNames = await fsAsync.readdir(sheets);
-        _sheets = await Promise.all(sheetJsonFileNames.map(async (fileName) => {
-            return JSON.parse(await fsAsync.readFile(`${sheets}\\${fileName}`));
-        }));
-    }
-    else {
-        _sheets = sheets;
-    }
+function cleanSheets(sheets) {
+    return sheets.map(consolidateSheet)
+
+}
+
+function flattenSheets(sheets){
+    return sheets.reduce((prev, curr) => prev.concat(curr), [])
 }
 
 
@@ -139,9 +145,9 @@ function extractDays(cleanedRows) {
 }
 
 
-function writeData(rows) {
+async function writeData(rows) {
     const filePath = `${TRAINING_DATA_DIR}/clean-phase-1/${new Date().getTime()}.csv`;
-    fs.outputFile(filePath, convertArrayToCSV(rows))
+    await fs.outputFile(filePath, convertArrayToCSV(rows))
 }
 
 function downloadSheetsAsync(spreadsheetId, sheetTitles, sheetsClient, downloadBatchDirectoryName) {

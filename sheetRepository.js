@@ -1,14 +1,20 @@
 const { promisify } = require('util');
 const sleep = require('system-sleep');
 const fs = require('fs-extra');
+const fsAsync = {
+    readFile: promisify(fs.readFile),
+    readdir: promisify(fs.readdir)
+}
 const { TRAINING_DATA_DIR } = require('./constants');
+
+const defaultBatchDirectory = `${TRAINING_DATA_DIR}/sheet-json-responses`
 
 function getSheetPromisesFromGoogleDrive(spreadsheetId, sheetsClient) {
     const getSpreadsheetAsync = promisify(sheetsClient.spreadsheets.get);
     return getSpreadsheetAsync({ spreadsheetId })
         .then(res => {
             const sheetTitles = res.data.sheets.map(s => s.properties.title).slice(1);
-            return getIndividualSheetsAsync(spreadsheetId, sheetTitles, sheetsClient);
+            return _getIndividualSheetsAsync(spreadsheetId, sheetTitles, sheetsClient);
         });
 }
 
@@ -17,11 +23,11 @@ async function getSheetsFromGoogleDrive(spreadsheetId, sheetsClient) {
     return Promise.all(sheetPromises);
 }
 
-async function persistSheetsToFileSystem(sheets) {
+async function persistSheetsToFileSystem(sheets, batchDirectory = defaultBatchDirectory) {
     const downloadBatchDirectoryName = `batch-${new Date().getTime()}`;
-    const sheetDirectory = `${TRAINING_DATA_DIR}/sheet-json-responses/${downloadBatchDirectoryName}`;
+    const batchPath = `${batchDirectory}/${downloadBatchDirectoryName}`;
     const persistedSheets = await Promise.all(sheets.map(async s => {
-        const filePath = `${sheetDirectory}/${s.sheetTitle}.json`;
+        const filePath = `${batchPath}/${s.sheetTitle}.json`;
         await fs.outputFile(filePath, JSON.stringify(s, null, 3));
 
         return s;
@@ -29,15 +35,22 @@ async function persistSheetsToFileSystem(sheets) {
 
     return {
         persistedSheets,
-        sheetDirectory
+        batchPath
     }
 }
 
-async function persistSheetPromisesToFileSystem(sheetPromises) {
-    return persistSheetsToFileSystem(await Promise.all(sheetPromises));
+async function persistSheetPromisesToFileSystem(sheetPromises, batchDirectory = defaultBatchDirectory) {
+    return persistSheetsToFileSystem(await Promise.all(sheetPromises), batchDirectory);
 }
 
-function getIndividualSheetsAsync(spreadsheetId, sheetTitles, sheetsClient) {
+async function getSheetsFromFileSystem(batchPath) {
+    const sheetJsonFileNames = await fsAsync.readdir(batchPath);
+    return await Promise.all(sheetJsonFileNames.map(async (fileName) => {
+        return JSON.parse(await fsAsync.readFile(`${batchPath}\\${fileName}`));
+    }));
+}
+
+function _getIndividualSheetsAsync(spreadsheetId, sheetTitles, sheetsClient) {
     // uncomment if getting rate limited during dev
     sheetTitles = sheetTitles.slice(0, 10);
 
@@ -60,5 +73,6 @@ module.exports = {
     getSheetPromisesFromGoogleDrive,
     persistSheetPromisesToFileSystem,
     getSheetsFromGoogleDrive,
-    persistSheetsToFileSystem
+    persistSheetsToFileSystem,
+    getSheetsFromFileSystem
 };
