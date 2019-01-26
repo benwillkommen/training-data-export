@@ -2,42 +2,30 @@ const fs = require('fs');
 const fse = require('fs-extra');
 const uuid = require('uuid');
 const { google } = require('googleapis');
-const { authorize, getAuthClientAsync } = require('./authorize')
+const { getAuthClientAsync } = require('./authorize')
 const { promisify } = require('util');
 const { isRowEmpty, stripBodyWeightRows, extractDay } = require('./rowProcessing')
 const { convertArrayToCSV } = require('convert-array-to-csv');
 const sleep = require('system-sleep');
+const { getSheetPromises, persistSheetPromises } = require('./sheetRepository');
 
 const SPREADSHEET_ID = process.argv[2] || '1Au638nEKSAa2xl8WucH_XW3tw8urKooXJHr9kmlkf1E';
-const TRAINING_DATA_DIR = process.env.TRAINING_DATA_DIR || "./data"
-
-const COLUMN_HEADERS = ["week", "day", "exercise", "sets", "reps", "instructions", "weight", "notes", "supersetId"];
-
-const readFileAsync = promisify(fs.readFile);
-const authorizeAsync = promisify(authorize);
+const { TRAINING_DATA_DIR, COLUMN_HEADERS } = require('./constants');
 
 
 (async function () {
+    const readFileAsync = promisify(fs.readFile);
     const credentials = JSON.parse(await readFileAsync('credentials.json'));
     const authClient = await getAuthClientAsync(credentials);
-    downloadSpreadsheetAsync(SPREADSHEET_ID, authClient);
+    const sheetsClient = google.sheets({ version: 'v4', auth: authClient });
+
+    const sheetPromises = await getSheetPromises(SPREADSHEET_ID, sheetsClient);
+    persistSheetPromises(sheetPromises);
+    //shittyDownloadSpreadsheetAsync(SPREADSHEET_ID, authClient);
 })();
 
-// Load client secrets from a local file.
-// fs.readFile('credentials.json', (err, content) => {
-//     if (err) return console.log('Error loading client secret file:', err);
 
-//     function withAuth(callback, spreadsheetId, auth) {
-//         callback(spreadsheetId, auth);
-//     }
-
-//     const processWithAuth = withAuth.bind(null, downloadSpreadsheetAsync, SPREADSHEET_ID);
-
-//     // Authorize a client with credentials, then call the Google Sheets API.
-//     authorize(JSON.parse(content), processWithAuth);
-// });
-
-function downloadSpreadsheetAsync(spreadsheetId, auth) {
+function shittyDownloadSpreadsheetAsync(spreadsheetId, auth) {
     const sheetsClient = google.sheets({ version: 'v4', auth });
     const getSpreadsheetAsync = promisify(sheetsClient.spreadsheets.get);
 
