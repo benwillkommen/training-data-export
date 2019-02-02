@@ -7,9 +7,7 @@ const fsAsync = {
 const uuid = require('uuid');
 const { google } = require('googleapis');
 const { getAuthClientAsync } = require('./authorize')
-const { isRowEmpty, stripBodyWeightRows, extractDay } = require('./rowProcessing')
 const { convertArrayToCSV } = require('convert-array-to-csv');
-const sleep = require('system-sleep');
 const sheetRepository = require('./sheetRepository');
 const { consolidateSheet } = require('./sheetConsolidation')
 
@@ -38,41 +36,15 @@ const { TRAINING_DATA_DIR, COLUMN_HEADERS } = require('./constants');
     const rowsWithAssociatedSupersets = associateSuperSets(rowsWithAllColumns);
     const cleanedRows = addHeaders(rowsWithAssociatedSupersets);
     await writeData(cleanedRows);
-
-    //shittyDownloadSpreadsheetAsync(SPREADSHEET_ID, authClient);
 })();
 
 function cleanSheets(sheets) {
     return sheets.map(consolidateSheet)
-
 }
 
 function flattenSheets(sheets) {
     return sheets.reduce((prev, curr) => prev.concat(curr), [])
 }
-
-
-function shittyDownloadSpreadsheetAsync(spreadsheetId, auth) {
-    const sheetsClient = google.sheets({ version: 'v4', auth });
-    const getSpreadsheetAsync = promisify(sheetsClient.spreadsheets.get);
-
-    const downloadBatchDirectoryName = `batch-${new Date().getTime()}`;
-
-    getSpreadsheetAsync({ spreadsheetId })
-        .then(res => {
-            return res.data.sheets.map(s => s.properties.title).slice(1);
-        })
-        .then(sheetTitles => downloadSheetsAsync(spreadsheetId, sheetTitles, sheetsClient, downloadBatchDirectoryName))
-        .then(sheetPromises => sheetPromises.map(cleanSheet))
-        .then(cleanedSheetPromises => Promise.all(cleanedSheetPromises))
-        .then(cleanedSheets => cleanedSheets.sort((x, y) => x[0][0] > y[0][0]))
-        .then(cleanedSheets => cleanedSheets.reduce((prev, curr) => prev.concat(curr), []))
-        .then(cleanedRows => ensureAllColumnsExist(cleanedRows))
-        .then(cleanedRows => associateSuperSets(cleanedRows))
-        .then(cleanedRows => addHeaders(cleanedRows))
-        .then(cleanedRows => writeData(cleanedRows));
-}
-
 
 function ensureAllColumnsExist(rows) {
     return rows.map(r => {
@@ -126,53 +98,9 @@ function associateSuperSets(cleanedRows) {
     return rowsWithAssociatedSuperSets
 }
 
-function cleanSheet(sheetPromise) {
-    return sheetPromise.then(sheet => {
-        const rows = sheet.data.values;
-        const cleanedRows = stripBodyWeightRows(rows.filter(r => !isRowEmpty(r)));
-        const specialCharsRemovedRows = cleanedRows.map(row => row.map(cell => typeof cell === "string" ? cell.replace(/["]*/g, "") : cell));
-        const dayLabeledRows = extractDays(specialCharsRemovedRows, 1);
-        const weekLabeledRows = dayLabeledRows.map(r => {
-            r.unshift(parseInt(sheet.data.sheetTitle.replace(/\D/g, '')));
-            return r;
-        });
-
-        return weekLabeledRows;
-    });
-}
-
-function extractDays(cleanedRows) {
-    return extractDay(cleanedRows, 1).concat(extractDay(cleanedRows, 2)).concat(extractDay(cleanedRows, 3)).concat(extractDay(cleanedRows, 4));
-}
-
-
 async function writeData(rows) {
     const filePath = `${TRAINING_DATA_DIR}/clean-phase-1/${new Date().getTime()}.csv`;
     await fs.outputFile(filePath, convertArrayToCSV(rows))
-}
-
-function downloadSheetsAsync(spreadsheetId, sheetTitles, sheetsClient, downloadBatchDirectoryName) {
-    //sheetTitles = sheetTitles.filter(title => title === "Week 99"); // comment when ready to process them all
-
-    const getSheetAsync = promisify(sheetsClient.spreadsheets.values.get);
-
-    const sheetPromises = sheetTitles.map(sheetTitle => {
-        sleep(200);
-        console.log(`getting sheet: ${sheetTitle}`)
-        return getSheetAsync({
-            spreadsheetId: spreadsheetId,
-            range: sheetTitle,
-        }).then(s => {
-            s.data.sheetTitle = sheetTitle;
-            return s;
-        }).then(s => {
-            const filePath = `${TRAINING_DATA_DIR}/sheet-json-responses/${downloadBatchDirectoryName}/${s.data.sheetTitle}.json`;
-            fs.outputFile(filePath, JSON.stringify(s.data, null, 3));
-            return s;
-        });
-    });
-
-    return sheetPromises;
 }
 
 function addHeaders(rows) {
