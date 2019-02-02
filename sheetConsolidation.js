@@ -27,7 +27,7 @@ function extractDays(cleanedRows) {
     return extractDay(cleanedRows, 1).concat(extractDay(cleanedRows, 2)).concat(extractDay(cleanedRows, 3)).concat(extractDay(cleanedRows, 4));
 }
 
-function consolidate(sheet) {
+function consolidateSheet(sheet) {
     const rows = sheet.values;
     const cleanedRows = stripBodyWeightRows(rows.filter(r => !isRowEmpty(r)));
     const specialCharsRemovedRows = cleanedRows.map(row => row.map(cell => typeof cell === "string" ? cell.replace(/["]*/g, "") : cell));
@@ -41,7 +41,7 @@ function consolidate(sheet) {
 }
 
 module.exports = {
-    consolidate,
+    consolidateSheet,
     util: {
         isCellEmpty,
         isRowEmpty,

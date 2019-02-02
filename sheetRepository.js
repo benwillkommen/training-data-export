@@ -52,7 +52,7 @@ async function getSheetsFromFileSystem(batchPath) {
 
 function _getIndividualSheetsAsync(spreadsheetId, sheetTitles, sheetsClient) {
     // uncomment if getting rate limited during dev
-    sheetTitles = sheetTitles.slice(0, 10);
+    // sheetTitles = sheetTitles.slice(0, 10);
 
     const getSheetAsync = promisify(sheetsClient.spreadsheets.values.get);
 

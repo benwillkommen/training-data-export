@@ -11,27 +11,28 @@ const { isRowEmpty, stripBodyWeightRows, extractDay } = require('./rowProcessing
 const { convertArrayToCSV } = require('convert-array-to-csv');
 const sleep = require('system-sleep');
 const sheetRepository = require('./sheetRepository');
-const {consolidate: consolidateSheet} = require('./sheetConsolidation')
+const { consolidateSheet } = require('./sheetConsolidation')
 
 const SPREADSHEET_ID = process.argv[2] || '1Au638nEKSAa2xl8WucH_XW3tw8urKooXJHr9kmlkf1E';
 const { TRAINING_DATA_DIR, COLUMN_HEADERS } = require('./constants');
 
 (async function () {
-    const sheets = await sheetRepository.getSheetsFromFileSystem("C:\\dev\\training-data-export\\data\\sheet-json-responses\\batch-1548518308304");
+    //const sheets = await sheetRepository.getSheetsFromFileSystem("C:\\dev\\training-data-export\\data\\sheet-json-responses\\batch-1548518308304");
 
     // just going to read from file system for now, since repository methods return same results whether
     // reading from google drive or file system
-    // const credentials = JSON.parse(await fsAsync.readFile('credentials.json'));
-    // const authClient = await getAuthClientAsync(credentials);
-    // const sheetsClient = google.sheets({ version: 'v4', auth: authClient });
+    const credentials = JSON.parse(await fsAsync.readFile('credentials.json'));
+    const authClient = await getAuthClientAsync(credentials);
+    const sheetsClient = google.sheets({ version: 'v4', auth: authClient });
 
-    // const sheetsFromGoogleDrive = await sheetRepository.getSheetsFromGoogleDrive(SPREADSHEET_ID, sheetsClient);
-    // const { persistedSheets, batchPath } = await sheetRepository.persistSheetsToFileSystem(sheetsFromGoogleDrive);
+    const sheetsFromGoogleDrive = await sheetRepository.getSheetsFromGoogleDrive(SPREADSHEET_ID, sheetsClient);
+    const { persistedSheets, batchPath } = await sheetRepository.persistSheetsToFileSystem(sheetsFromGoogleDrive);
 
+    // this is unnecessary, as we could have passed in sheetsFromGoogleDrive or persistedSheets
+    // just exercising the repository.
+    const sheetsFromFileSystem = await sheetRepository.getSheetsFromFileSystem(batchPath);
 
-    // const sheetsFromFileSystem = await sheetRepository.getSheetsFromFileSystem(batchPath);
-
-    const cleanedSheets = cleanSheets(sheets);
+    const cleanedSheets = cleanSheets(sheetsFromFileSystem);
     const rows = flattenSheets(cleanedSheets);
     const rowsWithAllColumns = ensureAllColumnsExist(rows);
     const rowsWithAssociatedSupersets = associateSuperSets(rowsWithAllColumns);
@@ -46,7 +47,7 @@ function cleanSheets(sheets) {
 
 }
 
-function flattenSheets(sheets){
+function flattenSheets(sheets) {
     return sheets.reduce((prev, curr) => prev.concat(curr), [])
 }
 

@@ -6,7 +6,7 @@ const { convertArrayToCSV } = require('convert-array-to-csv');
 
 const TRAINING_DATA_DIR = process.env.TRAINING_DATA_DIR || "./data"
 
-csv().fromFile(`${TRAINING_DATA_DIR}/clean-phase-1/1548211486743.csv`).then(rows => {
+csv().fromFile(`${TRAINING_DATA_DIR}/clean-phase-1/1548540305796.csv`).then(rows => {
     //rows = rows.filter(s => s.reps.includes("failure"));
     //rows = rows.filter(r => (r.week === "139" && r.exercise === "Incline DB Flyes"));
     // rows = rows.filter(r => (r.week === "95" && r.exercise === "Seated Machine Press")
