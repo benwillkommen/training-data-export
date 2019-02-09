@@ -1,4 +1,4 @@
-const ActivitySet = require('../ActivitySet');
+const ActivitySet = require('../../ActivitySet');
 module.exports = function dropSetStrategy(row) {
     function isDropDownSet(instructions) {
         const i = instructions.toLowerCase();

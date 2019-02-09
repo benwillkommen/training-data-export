@@ -1,4 +1,4 @@
-const ActivitySet = require('../ActivitySet');
+const ActivitySet = require('../../ActivitySet');
 module.exports = function differentRepsPerSetsStrategy(row) {
     function canHandle(row, validRepsForSets) {
         return validRepsForSets

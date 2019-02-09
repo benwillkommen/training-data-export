@@ -1,4 +1,4 @@
-const ActivitySet = require('../ActivitySet');
+const ActivitySet = require('../../ActivitySet');
 module.exports = function differentWeightsPerSetStrategy(row) {
     function parseWeightColumn(weightColumn) {
         const tokens = weightColumn.split(",");

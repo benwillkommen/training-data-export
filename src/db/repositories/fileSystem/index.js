@@ -5,13 +5,16 @@ const fsAsync = {
     readdir: promisify(fs.readdir)
 }
 const { convertArrayToCSV } = require('convert-array-to-csv');
+const csv = require('csvtojson');
 
-const { TRAINING_DATA_DIR } = require('../../../../constants');
-const defaultBatchDirectory = `${TRAINING_DATA_DIR}/sheet-json-responses`
+const { TRAINING_DATA_DIR } = require('../../../constants');
+const defaultSheetDownloadDirectory = `${TRAINING_DATA_DIR}/downloaded-sheets`;
+const defaultCleanedRowsDirectory = `${TRAINING_DATA_DIR}/cleaned-rows`;
+const defaultExtractedSetsDirectory = `${TRAINING_DATA_DIR}/extracted-sets`;
 
-async function persistSheets(sheets, batchDirectory = defaultBatchDirectory) {
+async function persistSheets(sheets, downloadDirectory = defaultSheetDownloadDirectory) {
     const downloadBatchDirectoryName = `batch-${new Date().getTime()}`;
-    const batchPath = `${batchDirectory}/${downloadBatchDirectoryName}`;
+    const batchPath = `${downloadDirectory}/${downloadBatchDirectoryName}`;
     const persistedSheets = await Promise.all(sheets.map(async s => {
         const filePath = `${batchPath}/${s.sheetTitle}.json`;
         await fs.outputFile(filePath, JSON.stringify(s, null, 3));
@@ -25,12 +28,12 @@ async function persistSheets(sheets, batchDirectory = defaultBatchDirectory) {
     }
 }
 
-async function persistSheetPromises(sheetPromises, batchDirectory = defaultBatchDirectory) {
-    return persistSheets(await Promise.all(sheetPromises), batchDirectory);
+async function persistSheetPromises(sheetPromises, downloadDirectory = defaultSheetDownloadDirectory) {
+    return persistSheets(await Promise.all(sheetPromises), downloadDirectory);
 }
 
 async function getSheets(batchPath) {
-    const _batchPath = batchPath || `${defaultBatchDirectory}/${_getMostRecent(defaultBatchDirectory)}`;
+    const _batchPath = batchPath || `${defaultSheetDownloadDirectory}/${_getMostRecent(defaultSheetDownloadDirectory)}`;
     const sheetJsonFileNames = await fsAsync.readdir(_batchPath);
     return await Promise.all(sheetJsonFileNames.map(async (fileName) => {
         return JSON.parse(await fsAsync.readFile(`${_batchPath}\\${fileName}`));
@@ -38,8 +41,18 @@ async function getSheets(batchPath) {
 }
 
 async function persistCleanedRows(cleanedRows) {
-    const filePath = `${TRAINING_DATA_DIR}/clean-phase-1/${new Date().getTime()}.csv`;
+    const filePath = `${defaultCleanedRowsDirectory}/${new Date().getTime()}.csv`;
     await fs.outputFile(filePath, convertArrayToCSV(cleanedRows));
+}
+
+async function getCleanedRows(cleanedRowsPath) {
+    const _cleanedRowsPath = cleanedRowsPath || `${defaultCleanedRowsDirectory}/${_getMostRecent(defaultCleanedRowsDirectory)}`;
+    return await csv().fromFile(_cleanedRowsPath);
+}
+
+async function persistExtractedSets(extractedSets) {
+    const filePath = `${defaultExtractedSetsDirectory}/${new Date().getTime()}.csv`;
+    await fs.outputFile(filePath, convertArrayToCSV(extractedSets))
 }
 
 // Return only base file name without dir
@@ -62,7 +75,9 @@ function _getMostRecent(dir) {
 
 module.exports = {
     persistSheetPromises,
-    persistSheets,
+    persistSheets,    
+    getSheets,
     persistCleanedRows,
-    getSheets
+    getCleanedRows,
+    persistExtractedSets
 };

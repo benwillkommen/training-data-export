@@ -1,4 +1,4 @@
-const ActivitySet = require('../ActivitySet');
+const ActivitySet = require('../../ActivitySet');
 module.exports = function compoundSetStrategy(row) {
     function canHandle(row) {
         return row.reps.toString().match(/^(\d+)\+(\d+)$/) !== null

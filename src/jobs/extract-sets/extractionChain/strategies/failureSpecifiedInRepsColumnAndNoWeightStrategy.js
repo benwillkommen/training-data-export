@@ -1,4 +1,4 @@
-const ActivitySet = require('../ActivitySet');
+const ActivitySet = require('../../ActivitySet');
 module.exports = function failureSpecifiedInRepsColumnAndNoWeightStrategy(row) {
     function splitCommaSeparatedReps(cell) {
         const reps = cell.split(',');

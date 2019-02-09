@@ -1,4 +1,4 @@
-const ActivitySet = require('../ActivitySet');
+const ActivitySet = require('../../ActivitySet');
 module.exports = function straightSetStrategy(row) {
     function canHandle(row) {
         return !isNaN(Number(row.reps))
