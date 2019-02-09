@@ -1,9 +1,10 @@
 const { promisify } = require('util');
 const sleep = require('system-sleep');
 const { getGoogleSheetsClient } = require('./auth');
+const { GOOGLE_SHEETS_API_SLEEP_MS } = require('../../../constants');
 
 async function getSheetPromises(spreadsheetId) {
-    const sheetsClient = await getGoogleSheetsClient();    
+    const sheetsClient = await getGoogleSheetsClient();
     const getSpreadsheetAsync = promisify(sheetsClient.spreadsheets.get);
     return getSpreadsheetAsync({ spreadsheetId })
         .then(res => {
@@ -26,7 +27,7 @@ function _getIndividualSheetsAsync(spreadsheetId, sheetTitles, sheetsClient) {
     const getSheetAsync = promisify(sheetsClient.spreadsheets.values.get);
 
     return sheetTitles.map(sheetTitle => {
-        sleep(500);
+        sleep(GOOGLE_SHEETS_API_SLEEP_MS);
         console.log(`getting sheet: ${sheetTitle}`)
         return getSheetAsync({
             spreadsheetId: spreadsheetId,

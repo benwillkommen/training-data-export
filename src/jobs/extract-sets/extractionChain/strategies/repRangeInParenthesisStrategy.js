@@ -1,3 +1,5 @@
+const ActivitySet = require('../../ActivitySet');
+
 module.exports = function repRangeInParenthesisStrategy(row) {
     // TODO
     //"(8-10)".match(/\((\d+)-(\d+)\)/)
@@ -5,7 +7,7 @@ module.exports = function repRangeInParenthesisStrategy(row) {
 
     function parseRepRange(repsColumn) {
         const matches = repsColumn.match(repsRegex);
-        if (matches && matches.count === 3) {
+        if (matches && matches.length === 3) {
             return Number(matches[2]);
         }
         return false;

@@ -1,3 +1,4 @@
+const uuid = require('uuid');
 const ActivitySet = require('../../ActivitySet');
 module.exports = function finalSetDropSetStrategy(row) {
     function isFinalDropDownSet(instructions) {

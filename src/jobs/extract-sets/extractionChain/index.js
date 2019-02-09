@@ -41,7 +41,7 @@ function extractSets(cleanedRows) {
                 }
             }
             catch (ex) {
-                //console.log(row.exercise, ex);
+                console.log(row.exercise, ex);
             }
         }
     }

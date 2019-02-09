@@ -36,7 +36,7 @@ async function getSheets(batchPath) {
     const _batchPath = batchPath || `${defaultSheetDownloadDirectory}/${_getMostRecent(defaultSheetDownloadDirectory)}`;
     const sheetJsonFileNames = await fsAsync.readdir(_batchPath);
     return await Promise.all(sheetJsonFileNames.map(async (fileName) => {
-        return JSON.parse(await fsAsync.readFile(`${_batchPath}\\${fileName}`));
+        return JSON.parse(await fsAsync.readFile(`${_batchPath}/${fileName}`));
     }));
 }
 
