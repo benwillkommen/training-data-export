@@ -5,8 +5,6 @@ const fsAsync = {
     readdir: promisify(fs.readdir)
 }
 const uuid = require('uuid');
-const { google } = require('googleapis');
-const { getAuthClientAsync } = require('./authorize')
 const { convertArrayToCSV } = require('convert-array-to-csv');
 const { consolidateSheet } = require('./sheetConsolidation')
 
@@ -16,15 +14,8 @@ const { TRAINING_DATA_DIR, COLUMN_HEADERS } = require('./constants');
 const db = require('./src/db');
 
 (async function () {
-    //const sheets = await sheetRepository.getSheetsFromFileSystem("C:\\dev\\training-data-export\\data\\sheet-json-responses\\batch-1548518308304");
-    var asdf = db;
-    // just going to read from file system for now, since repository methods return same results whether
-    // reading from google drive or file system
-    const credentials = JSON.parse(await fsAsync.readFile('credentials.json'));
-    const authClient = await getAuthClientAsync(credentials);
-    const sheetsClient = google.sheets({ version: 'v4', auth: authClient });
-
-    const sheetsFromGoogleDrive = await db.googleDrive.getSheets(SPREADSHEET_ID, sheetsClient);
+    
+    const sheetsFromGoogleDrive = await db.googleSheets.getSheets(SPREADSHEET_ID);
     const { persistedSheets, batchPath } = await db.fileSystem.persistSheets(sheetsFromGoogleDrive);
 
     // this is unnecessary, as we could have passed in sheetsFromGoogleDrive or persistedSheets

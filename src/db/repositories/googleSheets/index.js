@@ -1,7 +1,9 @@
 const { promisify } = require('util');
 const sleep = require('system-sleep');
+const { getGoogleSheetsClient } = require('./auth');
 
-function getSheetPromises(spreadsheetId, sheetsClient) {
+async function getSheetPromises(spreadsheetId) {
+    const sheetsClient = await getGoogleSheetsClient();    
     const getSpreadsheetAsync = promisify(sheetsClient.spreadsheets.get);
     return getSpreadsheetAsync({ spreadsheetId })
         .then(res => {
@@ -10,7 +12,8 @@ function getSheetPromises(spreadsheetId, sheetsClient) {
         });
 }
 
-async function getSheets(spreadsheetId, sheetsClient) {
+async function getSheets(spreadsheetId) {
+    const sheetsClient = await getGoogleSheetsClient();
     const sheetPromises = await getSheetPromises(spreadsheetId, sheetsClient);
     return Promise.all(sheetPromises);
 }
