@@ -17,16 +17,16 @@
             "program": "${workspaceFolder}/src/jobs/download-sheets/index.js"
         },
         {
-            "name": "Launch row-processing",
+            "name": "Launch clean-rows",
             "type": "node",
             "request": "launch",
-            "program": "${workspaceFolder}/src/jobs/row-processing/index.js"
+            "program": "${workspaceFolder}/src/jobs/clean-rows/index.js"
         },
         {
             "type": "node",
             "request": "launch",
-            "name": "Launch process-row-cells.js",
-            "program": "${workspaceFolder}/process-row-cells.js"
+            "name": "Launch extract-sets",
+            "program": "${workspaceFolder}/src/jobs/extract-sets/index.js"
         }
     ]
 }
