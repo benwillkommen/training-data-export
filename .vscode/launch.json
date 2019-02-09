@@ -14,13 +14,13 @@
             "name": "Launch process-rows.js",
             "type": "node",
             "request": "launch",
-            "program": "${workspaceFolder}\\process-rows.js"
+            "program": "${workspaceFolder}/process-rows.js"
         },
         {
             "type": "node",
             "request": "launch",
             "name": "Launch process-row-cells.js",
-            "program": "${workspaceFolder}\\process-row-cells.js"
+            "program": "${workspaceFolder}/process-row-cells.js"
         }
     ]
 }
