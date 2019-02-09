@@ -11,10 +11,16 @@
             "processId": "${command:PickProcess}"
         },
         {
-            "name": "Launch process-rows.js",
+            "name": "Launch download-sheets",
             "type": "node",
             "request": "launch",
-            "program": "${workspaceFolder}/process-rows.js"
+            "program": "${workspaceFolder}/src/jobs/download-sheets/index.js"
+        },
+        {
+            "name": "Launch row-processing",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/jobs/row-processing/index.js"
         },
         {
             "type": "node",

@@ -42,10 +42,8 @@ function consolidateSheet(sheet) {
 
 module.exports = {
     consolidateSheet,
-    util: {
-        isCellEmpty,
-        isRowEmpty,
-        stripBodyWeightRows,
-        extractDay
-    }
+    isCellEmpty,
+    isRowEmpty,
+    stripBodyWeightRows,
+    extractDay
 }
