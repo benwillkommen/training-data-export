@@ -1,3 +1,4 @@
+const uuid = require('uuid');
 const ActivitySet = require('../../ActivitySet');
 module.exports = function plusSignDelimitedRepsDropSetStrategy(row) {
     ///	Incline DB Flyes	3	10+6	10 reps then drop down 6 more	45, 35																				

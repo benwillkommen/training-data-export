@@ -4,6 +4,7 @@ const {
     cleanSheets,
     flattenSheets,
     associateSuperSets,
+    fillInBlankExerciseNames,
     addHeaders } = require('./util');
 
 const BATCH_PATH = process.argv[2];
@@ -15,7 +16,8 @@ const BATCH_PATH = process.argv[2];
     const rows = flattenSheets(cleanedSheets);
     const rowsWithAllColumns = ensureAllColumnsExist(rows);
     const rowsWithAssociatedSupersets = associateSuperSets(rowsWithAllColumns);
-    const cleanedRows = addHeaders(rowsWithAssociatedSupersets);
+    const rowsWithBlankExercisesFilledIn = fillInBlankExerciseNames(rowsWithAssociatedSupersets)
+    const cleanedRows = addHeaders(rowsWithBlankExercisesFilledIn);
 
     await db.fileSystem.persistCleanedRows(cleanedRows);
 })();

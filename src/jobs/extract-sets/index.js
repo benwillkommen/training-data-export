@@ -9,7 +9,7 @@ const CLEANED_ROWS_PATH = process.argv[2];
         //                 r.day === "4" &&
         //                 r.exercise === "Seated Incline DB Curl");
 
-
+    console.log("Blank exercise rows:", cleanedRows.filter(r => r.exercise === ""));
 
     const sets = extractionChain.extractSets(cleanedRows);
 
