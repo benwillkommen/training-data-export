@@ -5,10 +5,11 @@ const {
     differentWeightsPerSetStrategy,
     differentRepsPerSetsStrategy,
     finalSetDropSetStrategy,
-    plusSignDelimitedRepsDropSetStrategy,
+    delimitedRepsDropSetStrategy,
     dropSetStrategy,
     failureSpecifiedInRepsColumnAndNoWeightStrategy,
     repRangeInParenthesisStrategy,
+    partialRepsStrategy,
     catchAllStrategy
 } = require('./strategies');
 
@@ -16,9 +17,10 @@ const orderedStrategies = [
     noWeightStraightSetStrategy,
     straightSetStrategy,
     compoundSetStrategy,
+    partialRepsStrategy,
     finalSetDropSetStrategy,
     dropSetStrategy,
-    plusSignDelimitedRepsDropSetStrategy,
+    delimitedRepsDropSetStrategy,
     differentWeightsPerSetStrategy,
     differentRepsPerSetsStrategy,
     failureSpecifiedInRepsColumnAndNoWeightStrategy,

@@ -18,7 +18,7 @@ module.exports = function failureSpecifiedInRepsColumnAndNoWeightStrategy(row) {
             const rowCopy = JSON.parse(JSON.stringify(row));
             rowCopy.reps = r;
             rowCopy.weight = "";
-            return new ActivitySet(rowCopy, i + 1, "bodyweightUntilFailureStrategy");
+            return new ActivitySet(rowCopy, i + 1, "failureSpecifiedInRepsColumnAndNoWeightStrategy");
         });
     }
     return false;

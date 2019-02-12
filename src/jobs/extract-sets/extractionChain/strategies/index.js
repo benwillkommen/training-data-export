@@ -5,9 +5,10 @@ module.exports = {
     differentWeightsPerSetStrategy: require('./differentWeightsPerSetStrategy'),
     differentRepsPerSetsStrategy: require('./differentRepsPerSetsStrategy'),
     finalSetDropSetStrategy: require('./finalSetDropSetStrategy'),
-    plusSignDelimitedRepsDropSetStrategy: require('./plusSignDelimitedRepsDropSetStrategy'),
+    delimitedRepsDropSetStrategy: require('./delimitedRepsDropSetStrategy'),
     dropSetStrategy: require('./dropSetStrategy'),
     failureSpecifiedInRepsColumnAndNoWeightStrategy: require('./failureSpecifiedInRepsColumnAndNoWeightStrategy'),
     repRangeInParenthesisStrategy: require('./repRangeInParenthesisStrategy'),
+    partialRepsStrategy: require('./partialRepsStrategy'),
     catchAllStrategy: require('./catchAllStrategy')
 }
