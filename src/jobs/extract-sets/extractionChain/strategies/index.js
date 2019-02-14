@@ -10,5 +10,8 @@ module.exports = {
     failureSpecifiedInRepsColumnAndNoWeightStrategy: require('./failureSpecifiedInRepsColumnAndNoWeightStrategy'),
     repRangeInParenthesisStrategy: require('./repRangeInParenthesisStrategy'),
     partialRepsStrategy: require('./partialRepsStrategy'),
-    catchAllStrategy: require('./catchAllStrategy')
+    failureSpecifiedInRepsColumnWithWeightStrategy : require('./failureSpecifiedInRepsColumnWithWeightStrategy'),
+    differentRepsEachSetStrategy: require('./differentRepsEachSetStrategy'),
+    catchAllStrategy: require('./catchAllStrategy'),
+    ignoreRowStrategy: require('./ignoreRowStrategy')
 }

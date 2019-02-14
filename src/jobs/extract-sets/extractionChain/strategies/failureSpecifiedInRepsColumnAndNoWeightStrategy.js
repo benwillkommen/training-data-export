@@ -23,3 +23,5 @@ module.exports = function failureSpecifiedInRepsColumnAndNoWeightStrategy(row) {
     }
     return false;
 }
+
+
