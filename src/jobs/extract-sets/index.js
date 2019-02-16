@@ -5,9 +5,18 @@ const CLEANED_ROWS_PATH = process.argv[2];
 
 (async function () {
     const cleanedRows = (await db.fileSystem.getCleanedRows(CLEANED_ROWS_PATH))
-        // .filter(r =>    r.week === "135" && 
+        // .filter(r =>    r.week === "145" && 
+        //                 r.day === "1" &&
+        //                 r.exercise === "Front Squats");
+        // .filter(r =>    r.week === "139" && 
+        //                 r.day === "1" &&
+        //                 r.exercise === "Leg Extensions");
+        // .filter(r =>    r.week === "140" && 
         //                 r.day === "1" &&
         //                 r.exercise === "Leg Press");
+        // .filter(r =>    r.week === "145" && 
+        //                 r.day === "2" &&
+        //                 r.exercise === "Flat DB Bench Press");
 
     console.log("Blank exercise rows:", cleanedRows.filter(r => r.exercise === ""));
 

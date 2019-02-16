@@ -12,6 +12,7 @@ module.exports = {
     partialRepsStrategy: require('./partialRepsStrategy'),
     failureSpecifiedInRepsColumnWithWeightStrategy : require('./failureSpecifiedInRepsColumnWithWeightStrategy'),
     differentRepsEachSetStrategy: require('./differentRepsEachSetStrategy'),
+    finalSetDoubleDropSetStrategy: require('./finalSetDoubleDropSetStrategy'),
     catchAllStrategy: require('./catchAllStrategy'),
     ignoreRowStrategy: require('./ignoreRowStrategy')
 }

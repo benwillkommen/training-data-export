@@ -15,30 +15,7 @@ module.exports = function finalSetDropSetStrategy(row) {
         }
         return false;
     }
-    // function parseDropSetWeight(weightColumn) {
-    //     const tokens = weightColumn.split(",");
-    //     const repsForWeights = tokens
-    //         .map(token => token.trim().split("x").map(t => Number(t)))
-    //         .map()
-    //     if (tokens.every(t => !isNaN(Number(t)))) {
-    //         return tokens.map(t => Number(t));
-    //     }
-    //     return false;
-    // }
-    // function parseRepsColumn(repsColumn) {
-    //     const tokens = repsColumn.split(",");
-    //     const repsForSets = tokens
-    //         .map(token => token.trim().split("x").map(t => Number(t)))
-    //         .map(pair => pair.length === 1 ? pair.concat(1) : pair)
-    //         .reduce((collection, nextPair) => {
-    //             const sets = [];
-    //             for (let i = 0; i < nextPair[1]; i++) {
-    //                 sets.push(nextPair[0])
-    //             }
-    //             return collection.concat(sets);
-    //         }, []);
-    //     return repsForSets;
-    // }
+    
     function canHandle(row, parsedWeights) {
         return isFinalDropDownSet(row.instructions)
             && !isNaN(Number(row.sets))
