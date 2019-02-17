@@ -15,7 +15,7 @@ module.exports = function failureSpecifiedInRepsColumnWithWeightStrategy(row) {
         return false;
     }
     function canHandle(row, weightForReps) {
-        return row.reps.toString().toLowerCase().trim().match(/^failure$|^max$/)
+        return row.reps.toString().toLowerCase().trim().match(/failure|max/)
             && !isNaN(Number(row.sets))
             && weightForReps
             && weightForReps.length === Number(row.sets);

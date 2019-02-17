@@ -1,6 +1,6 @@
 # Novel Test Cases
 
-## Drop Sets
+### Drop Sets
 
 ```
 // .filter(r =>    r.week === "139" && 
@@ -12,6 +12,14 @@
 // .filter(r =>    r.week === "145" && 
 //                 r.day === "2" &&
 //                 r.exercise === "Flat DB Bench Press");
+```
+
+### Rep Ranges with Reps in Weight Column
+E.g. (12-15) reps, 25x12 weight
+```
+// .filter(r =>    r.week === "139" && 
+//                 r.day === "1" &&
+//                 r.exercise === "Leg Extensions");
 ```
 
 # General Notes
