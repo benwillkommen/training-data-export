@@ -1,4 +1,5 @@
 const ActivitySet = require('../../ActivitySet');
+const parseWeightColumn = require('./columnParsers/parseWeightColumn');
 
 module.exports = function repRangeInParenthesisStrategy(row) {
     const repsRegex = /\((\d+)-(\d+)\)/;
@@ -11,18 +12,21 @@ module.exports = function repRangeInParenthesisStrategy(row) {
         return false;
     }
 
-    function canHandle(row) {
-        return parseRepRange(row.reps)
+    function canHandle(row, parsedReps, weightByReps) {
+        return parsedReps !== false
             && !isNaN(Number(row.sets))
-            && !isNaN(Number(row.weight));
+            && weightByReps !== false;
     }
 
-    if (canHandle(row)) {
-        const reps = parseRepRange(row.reps);
+    const parsedReps = parseRepRange(row.reps);
+    const weightByReps = parseWeightColumn(row.weight, parsedReps);
+
+    if (canHandle(row, parsedReps, weightByReps)) {
         const sets = [];
         for (let i = 0; i < row.sets; i++) {
-            const set = new ActivitySet(row, i + 1, "repRangeInParenthesisStrategy");
-            set.reps = reps;
+            const { weight, reps } = weightByReps.length > i ? weightByReps[i] : weightByReps.slice(-1)[0];
+            
+            const set = new ActivitySet(row, i + 1, "repRangeInParenthesisStrategy", reps, weight);
             sets.push(set);
         }
         return sets;
