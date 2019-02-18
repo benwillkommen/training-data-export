@@ -20,43 +20,23 @@ async function getSheets(spreadsheetId) {
 }
 
 
-async function _getIndividualSheetsAsync(spreadsheetId, sheetTitles, sheetsClient) {
+function _getIndividualSheetsAsync(spreadsheetId, sheetTitles, sheetsClient) {
     // uncomment if getting rate limited during dev
     // sheetTitles = sheetTitles.slice(0, 10);
 
     const getSheetAsync = promisify(sheetsClient.spreadsheets.values.get);
 
-    async function getSheetsWithBackoff(sheetTitlesRemaining, sheetsCollected, sleepTime, retriesRemaining) {
-        sleep(sleepTime);
-        const sheetTitle = sheetTitlesRemaining[0];
-        console.log(`getting sheet: ${sheetTitle}`);
-        try {
-            const sheet = await getSheetAsync({
-                spreadsheetId: spreadsheetId,
-                range: sheetTitle,
-            });
-            sheet.data.sheetTitle = sheetTitle;
-            sheetsCollected.push(sheet);
-            if (sheetTitlesRemaining.length > 0) {
-                getSheetsWithBackoff(sheetTitlesRemaining.slice(1), sheetsCollected, sleepTime, retriesRemaining);
-            }
-            return sheetsCollected;
-        }
-        catch (ex) {
-            const newRetriesRemaining = retriesRemaining - 1;
-            const newSleepTime = sleepTime * 2;
-            if (newRetriesRemaining <= 0) {
-                console.log("Ran out of retries getting sheets. Rethrowing.")
-                throw (ex);
-            }
-            console.log(`exception getting sheet "${sheetTitle}. sleepTime increased to ${newSleepTime}, retries remaining: ${newRetriesRemaining}"`, ex);
-            console.log()
-            getSheetsWithBackoff(sheetTitlesRemaining, sheetsCollected, newSleepTime, newRetriesRemaining);
-        }
-    };
-
-    return getSheetsWithBackoff(sheetTitles, [], GOOGLE_SHEETS_API_SLEEP_MS, 15);
-    
+    return sheetTitles.map(sheetTitle => {
+        sleep(GOOGLE_SHEETS_API_SLEEP_MS);
+        console.log(`getting sheet: ${sheetTitle}`)
+        return getSheetAsync({
+            spreadsheetId: spreadsheetId,
+            range: sheetTitle,
+        }).then(s => {
+            s.data.sheetTitle = sheetTitle;
+            return s.data;
+        });
+    });
 }
 
 module.exports = {
