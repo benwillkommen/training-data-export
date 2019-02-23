@@ -22,6 +22,14 @@ E.g. (12-15) reps, 25x12 weight
 //                 r.exercise === "Leg Extensions");
 ```
 
+### Set Ranges with Sets, Reps, and Weight Specified in Weight Column
+e.g. (2-3) sets, 8 reps, weight column enterd as "3x8x245"
+```
+// .filter(r =>    r.week === "1" && 
+//                 r.day === "4" &&
+//                 r.exercise === "Close Grip Bench Press");
+```
+
 # General Notes
 * Consider creating directories for "row" strategies and "column" strategies, where row strategies could compose column strategies together
     * Should extract the generalizable `parseDropSetRepsForWeights` funcion inside `finalSetDoubleDropSetStrategy` to `strategies/column/weight`, and re-use it _much_ more: it's capable of handling a format like "120, 100x4, 80, 70".
