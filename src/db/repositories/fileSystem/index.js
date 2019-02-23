@@ -6,6 +6,7 @@ const fsAsync = {
 }
 const { convertArrayToCSV } = require('convert-array-to-csv');
 const csv = require('csvtojson');
+const moment = require('moment');
 
 const { TRAINING_DATA_DIR } = require('../../../constants');
 const defaultSheetDownloadDirectory = `${TRAINING_DATA_DIR}/downloaded-sheets`;
@@ -13,7 +14,8 @@ const defaultCleanedRowsDirectory = `${TRAINING_DATA_DIR}/cleaned-rows`;
 const defaultExtractedSetsDirectory = `${TRAINING_DATA_DIR}/extracted-sets`;
 
 async function persistSheets(sheets, downloadDirectory = defaultSheetDownloadDirectory) {
-    const downloadBatchDirectoryName = `batch-${new Date().getTime()}`;
+    const dateString = moment().format('YYYY-MM-DD-THH-mm-ss.SS');
+    const downloadBatchDirectoryName = `batch-${dateString}`;
     const batchPath = `${downloadDirectory}/${downloadBatchDirectoryName}`;
     const persistedSheets = await Promise.all(sheets.map(async s => {
         const filePath = `${batchPath}/${s.sheetTitle}.json`;
@@ -41,7 +43,8 @@ async function getSheets(batchPath) {
 }
 
 async function persistCleanedRows(cleanedRows) {
-    const filePath = `${defaultCleanedRowsDirectory}/${new Date().getTime()}.csv`;
+    const dateString = moment().format('YYYY-MM-DD-THH-mm-ss.SS');
+    const filePath = `${defaultCleanedRowsDirectory}/${dateString}.csv`;
     await fs.outputFile(filePath, convertArrayToCSV(cleanedRows));
 }
 
@@ -51,8 +54,11 @@ async function getCleanedRows(cleanedRowsPath) {
 }
 
 async function persistExtractedSets(extractedSets) {
-    const filePath = `${defaultExtractedSetsDirectory}/${new Date().getTime()}.csv`;
-    await fs.outputFile(filePath, convertArrayToCSV(extractedSets))
+    const dateString = moment().format('YYYY-MM-DD-THH-mm-ss.SS');
+    const setsFilePath = `${defaultExtractedSetsDirectory}/${dateString}/${dateString}-sets.csv`;
+    const anomaliesFilePath = `${defaultExtractedSetsDirectory}/${dateString}/${dateString}-anomalies.json`;
+    await fs.outputFile(setsFilePath, convertArrayToCSV(extractedSets));
+    await fs.outputFile(anomaliesFilePath, JSON.stringify(extractedSets.filter(s => s.anomalous), null, 3));
 }
 
 // Return only base file name without dir

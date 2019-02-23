@@ -14,7 +14,8 @@ const {
     catchAllStrategy,
     ignoreRowStrategy,
     differentRepsEachSetStrategy,
-    finalSetDoubleDropSetStrategy
+    finalSetDoubleDropSetStrategy,
+    setRangeInParenthesisStrategy
 } = require('./strategies');
 
 const orderedStrategies = [
@@ -33,6 +34,7 @@ const orderedStrategies = [
     failureSpecifiedInRepsColumnWithWeightStrategy,
     differentRepsEachSetStrategy,
     finalSetDoubleDropSetStrategy,
+    setRangeInParenthesisStrategy,
     catchAllStrategy
 ];
 

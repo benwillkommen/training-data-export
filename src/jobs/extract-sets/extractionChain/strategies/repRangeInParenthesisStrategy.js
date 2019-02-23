@@ -1,5 +1,5 @@
 const ActivitySet = require('../../ActivitySet');
-const parseWeightColumn = require('./columnParsers/parseWeightColumn');
+const { parseWeightColumn } = require('./columnParsers');
 
 module.exports = function repRangeInParenthesisStrategy(row) {
     const repsRegex = /\((\d+)-(\d+)\)/;
