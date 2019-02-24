@@ -18,10 +18,10 @@ async function persistSheets(sheets, downloadDirectory = defaultSheetDownloadDir
     const downloadBatchDirectoryName = `batch-${dateString}`;
     const batchPath = `${downloadDirectory}/${downloadBatchDirectoryName}`;
     const persistedSheets = await Promise.all(sheets.map(async s => {
-        const filePath = `${batchPath}/${s.sheetTitle}.json`;
-        await fs.outputFile(filePath, JSON.stringify(s, null, 3));
+        const filePath = `${batchPath}/${s.data.sheetTitle}.json`;
+        await fs.outputFile(filePath, JSON.stringify(s.data, null, 3));
 
-        return s;
+        return s.data;
     }));
 
     return {
@@ -64,8 +64,8 @@ async function persistExtractedSets(extractedSets) {
 // Return only base file name without dir
 function _getMostRecent(dir) {
     var fs = require('fs'),
-    path = require('path'),
-    _ = require('underscore');
+        path = require('path'),
+        _ = require('underscore');
 
     var files = fs.readdirSync(dir);
 
@@ -81,7 +81,7 @@ function _getMostRecent(dir) {
 
 module.exports = {
     persistSheetPromises,
-    persistSheets,    
+    persistSheets,
     getSheets,
     persistCleanedRows,
     getCleanedRows,
