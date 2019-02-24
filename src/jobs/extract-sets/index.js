@@ -18,8 +18,6 @@ const CLEANED_ROWS_PATH = process.argv[2];
         //                 r.day === "2" &&
         //                 r.exercise === "Flat DB Bench Press");
 
-    console.log("Blank exercise rows:", cleanedRows.filter(r => r.exercise === ""));
-
     const sets = extractionChain.extractSets(cleanedRows);
 
     console.log("Anomalous rows:", sets.filter(s => s.anomalous));

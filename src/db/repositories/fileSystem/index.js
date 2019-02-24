@@ -46,6 +46,7 @@ async function persistCleanedRows(cleanedRows) {
     const dateString = moment().format('YYYY-MM-DD-THH-mm-ss.SS');
     const filePath = `${defaultCleanedRowsDirectory}/${dateString}.csv`;
     await fs.outputFile(filePath, convertArrayToCSV(cleanedRows));
+    return filePath;
 }
 
 async function getCleanedRows(cleanedRowsPath) {

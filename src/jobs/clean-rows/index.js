@@ -19,5 +19,7 @@ const BATCH_PATH = process.argv[2];
     const rowsWithBlankExercisesFilledIn = fillInBlankExerciseNames(rowsWithAssociatedSupersets)
     const cleanedRows = addHeaders(rowsWithBlankExercisesFilledIn);
 
-    await db.fileSystem.persistCleanedRows(cleanedRows);
+    const filePath = await db.fileSystem.persistCleanedRows(cleanedRows);
+    console.log(`Cleaned rows saved to ${filePath}`);
+    
 })();
