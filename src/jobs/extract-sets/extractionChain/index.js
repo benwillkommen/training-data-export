@@ -40,6 +40,7 @@ const orderedStrategies = [
 
 function extractSets(cleanedRows) {
     let sets = []
+    let exceptions = [];
 
     for (let i = 0; i < cleanedRows.length; i++) {
         const row = cleanedRows[i];
@@ -52,12 +53,13 @@ function extractSets(cleanedRows) {
                 }
             }
             catch (ex) {
-                console.log(row.exercise, ex);
+                //console.log(ex, `Week ${row.week}, Day ${row.day}, ${row.exercise}`, row, "");
+                exceptions.push({ ex, row });
             }
         }
     }
 
-    return sets;
+    return { sets, exceptions };
 }
 
 module.exports = {

@@ -18,9 +18,11 @@ const CLEANED_ROWS_PATH = process.argv[2];
         //                 r.day === "2" &&
         //                 r.exercise === "Flat DB Bench Press");
 
-    const sets = extractionChain.extractSets(cleanedRows);
+    const { sets, exceptions } = extractionChain.extractSets(cleanedRows);
 
     console.log("Anomalous rows:", sets.filter(s => s.anomalous));
 
-    db.fileSystem.persistExtractedSets(sets);
+    const directory = await db.fileSystem.persistExtractedSets(sets, exceptions);
+
+    console.log(`Sets written to ${directory}`);
 })();

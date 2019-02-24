@@ -54,12 +54,18 @@ async function getCleanedRows(cleanedRowsPath) {
     return await csv().fromFile(_cleanedRowsPath);
 }
 
-async function persistExtractedSets(extractedSets) {
+async function persistExtractedSets(extractedSets, exceptions) {
     const dateString = moment().format('YYYY-MM-DD-THH-mm-ss.SS');
-    const setsFilePath = `${defaultExtractedSetsDirectory}/${dateString}/${dateString}-sets.csv`;
-    const anomaliesFilePath = `${defaultExtractedSetsDirectory}/${dateString}/${dateString}-anomalies.json`;
-    await fs.outputFile(setsFilePath, convertArrayToCSV(extractedSets));
-    await fs.outputFile(anomaliesFilePath, JSON.stringify(extractedSets.filter(s => s.anomalous), null, 3));
+    const directory = `${defaultExtractedSetsDirectory}/${dateString}`;
+
+    const anomalousSets = extractedSets.filter(s => s.anomalous);
+
+    await fs.outputFile(`${directory}/sets.csv`, convertArrayToCSV(extractedSets));
+    await fs.outputFile(`${directory}/anomalies.csv`, JSON.stringify([{ anomalyCount: anomalousSets.length }, anomalousSets], null, 3));
+    await fs.outputFile(`${directory}/exceptions.csv`, JSON.stringify([{ exceptionCount: exceptions.length }, exceptions], null, 3));
+
+    return directory;
+
 }
 
 // Return only base file name without dir
