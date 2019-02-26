@@ -9,7 +9,7 @@ module.exports = function setRangeInParenthesisStrategy(row) {
     }
 
     const parsedSets = parseSetRange(row.sets);
-    const weightByReps = parseWeightColumn(row.weight, parsedSets);
+    const weightByReps = parseWeightColumn(row.weight, row.reps);
     if (canHandle(row, parsedSets, weightByReps)) {
 
         let numberOfSets = parsedSets.maxSets;
