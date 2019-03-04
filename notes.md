@@ -44,3 +44,5 @@ e.g. Week 17, Day 1, (2-4) sets 6, reps, weight column entered as "2x205" to ind
 # General Notes
 * Consider creating directories for "row" strategies and "column" strategies, where row strategies could compose column strategies together
     * Should extract the generalizable `parseDropSetRepsForWeights` funcion inside `finalSetDoubleDropSetStrategy` to `strategies/column/weight`, and re-use it _much_ more: it's capable of handling a format like "120, 100x4, 80, 70".
+* Consider eliminating compoundSetStrategy in favor of delimitedRepsDropDownStrategy
+* Manual cleaning: left off at week 34

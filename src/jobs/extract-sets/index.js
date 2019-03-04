@@ -5,6 +5,12 @@ const CLEANED_ROWS_PATH = process.argv[2];
 
 (async function () {
     const cleanedRows = (await db.fileSystem.getCleanedRows(CLEANED_ROWS_PATH))
+        // .filter(r =>    r.week === "2" && 
+        //                 r.day === "4" &&
+        //                 r.exercise === "Rack Pulls- Mid Shin");
+        // .filter(r =>    r.week === "66" && 
+        //                 r.day === "2" &&
+        //                 r.exercise === "Seated DB Shoulder Press");
         // .filter(r =>    r.week === "67" && 
         //                 r.day === "2" &&
         //                 r.exercise === "Strip The Rack Presses");

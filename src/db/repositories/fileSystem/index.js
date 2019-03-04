@@ -61,9 +61,9 @@ async function persistExtractedSets(extractedSets, exceptions) {
     const anomalousSets = extractedSets.filter(s => s.anomalous);
 
     await fs.outputFile(`${directory}/sets.csv`, convertArrayToCSV(extractedSets));
-    await fs.outputFile(`${directory}/anomalies.csv`, JSON.stringify([{ anomalyCount: anomalousSets.length }, anomalousSets], null, 3));
+    await fs.outputFile(`${directory}/anomalies.json`, JSON.stringify([{ anomalyCount: anomalousSets.length }, anomalousSets], null, 3));
     if (exceptions) {
-        await fs.outputFile(`${directory}/exceptions.csv`, JSON.stringify([{ exceptionCount: exceptions.length }, exceptions], null, 3));
+        await fs.outputFile(`${directory}/exceptions.json`, JSON.stringify([{ exceptionCount: exceptions.length }, exceptions], null, 3));
     }
 
     return directory;
