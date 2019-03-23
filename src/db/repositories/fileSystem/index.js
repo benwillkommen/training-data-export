@@ -13,6 +13,10 @@ const defaultSheetDownloadDirectory = `${TRAINING_DATA_DIR}/downloaded-sheets`;
 const defaultCleanedRowsDirectory = `${TRAINING_DATA_DIR}/cleaned-rows`;
 const defaultExtractedSetsDirectory = `${TRAINING_DATA_DIR}/extracted-sets`;
 
+const exerciseSynonymsCsvPath = `${TRAINING_DATA_DIR}/Exercise Synonyms - synonyms.csv`;
+const cleanedExerciseSynonymsCsvPath = `${TRAINING_DATA_DIR}/Exercise Synonyms - cleaned synonyms.csv`;
+const canonicalNamesCsvPath = `${TRAINING_DATA_DIR}/Exercise Canonical Names.csv`;
+
 async function persistSheets(sheets, downloadDirectory = defaultSheetDownloadDirectory) {
     const dateString = moment().format('YYYY-MM-DD-THH-mm-ss.SS');
     const downloadBatchDirectoryName = `batch-${dateString}`;
@@ -52,6 +56,27 @@ async function persistCleanedRows(cleanedRows) {
 async function getCleanedRows(cleanedRowsPath) {
     const _cleanedRowsPath = cleanedRowsPath || `${defaultCleanedRowsDirectory}/${_getMostRecent(defaultCleanedRowsDirectory)}`;
     return await csv().fromFile(_cleanedRowsPath);
+}
+
+async function getExerciseSynonymList(){
+    return csv().fromFile(exerciseSynonymsCsvPath);
+}
+
+async function persistExerciseSynonymList(list){
+    await fs.outputFile(cleanedExerciseSynonymsCsvPath, convertArrayToCSV(list));
+    return cleanedExerciseSynonymsCsvPath;
+}
+
+async function persistCanonicalNameLookup(canonicalNameLookup){
+    const formattedLookup = Object.keys(canonicalNameLookup).map(key => {
+        return {
+            canonicalName: key,
+            names: Array.from(canonicalNameLookup[key]).reduce((commaDelimitedString, next) => `${next},${commaDelimitedString}`, '')            
+        }
+    });
+
+    await fs.outputFile(canonicalNamesCsvPath, convertArrayToCSV(formattedLookup));
+    return canonicalNamesCsvPath;
 }
 
 async function persistExtractedSets(extractedSets, exceptions) {
@@ -94,5 +119,8 @@ module.exports = {
     getSheets,
     persistCleanedRows,
     getCleanedRows,
-    persistExtractedSets
+    persistExtractedSets,
+    getExerciseSynonymList,
+    persistExerciseSynonymList,
+    persistCanonicalNameLookup
 };
