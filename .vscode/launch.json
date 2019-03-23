@@ -26,8 +26,8 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Launch exercise synonyms",
-            "program": "${workspaceFolder}/src/jobs/clean-rows/util/exerciseSynonyms/index.js"
+            "name": "Launch exercise-names",
+            "program": "${workspaceFolder}/src/jobs/exercise-names/generate-canonical-names.js"
         },
         {
             "type": "node",

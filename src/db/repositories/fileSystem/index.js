@@ -13,9 +13,8 @@ const defaultSheetDownloadDirectory = `${TRAINING_DATA_DIR}/downloaded-sheets`;
 const defaultCleanedRowsDirectory = `${TRAINING_DATA_DIR}/cleaned-rows`;
 const defaultExtractedSetsDirectory = `${TRAINING_DATA_DIR}/extracted-sets`;
 
-const exerciseSynonymsCsvPath = `${TRAINING_DATA_DIR}/Exercise Synonyms - synonyms.csv`;
-const cleanedExerciseSynonymsCsvPath = `${TRAINING_DATA_DIR}/Exercise Synonyms - cleaned synonyms.csv`;
-const canonicalNamesCsvPath = `${TRAINING_DATA_DIR}/Exercise Canonical Names.csv`;
+const nameListCsvPath = `${TRAINING_DATA_DIR}/exercise-synonyms/name-list.csv`;
+const canonicalNameListCsvPath = `${TRAINING_DATA_DIR}/exercise-synonyms/canonical-name-list.csv`;
 
 async function persistSheets(sheets, downloadDirectory = defaultSheetDownloadDirectory) {
     const dateString = moment().format('YYYY-MM-DD-THH-mm-ss.SS');
@@ -58,25 +57,46 @@ async function getCleanedRows(cleanedRowsPath) {
     return await csv().fromFile(_cleanedRowsPath);
 }
 
-async function getExerciseSynonymList(){
-    return csv().fromFile(exerciseSynonymsCsvPath);
+async function getExerciseNameList() {
+    return csv().fromFile(nameListCsvPath);
 }
 
-async function persistExerciseSynonymList(list){
-    await fs.outputFile(cleanedExerciseSynonymsCsvPath, convertArrayToCSV(list));
-    return cleanedExerciseSynonymsCsvPath;
+async function getExerciseNameLookup() {
+    return (await getExerciseNameList()).reduce((dict, next) => {
+        const name = next.name.toLowerCase();
+        const canonicalName = next.canonicalName === "" ? name : next.canonicalName.toLowerCase();
+
+        dict[name] = canonicalName;
+        return dict;
+    }, {});;
 }
 
-async function persistCanonicalNameLookup(canonicalNameLookup){
+async function getCanonicalNameLookup() {
+    return (await csv().fromFile(canonicalNameListCsvPath)).reduce((dict, next) => {
+        if(typeof dict[next.canonicalName] !== 'undefined'){
+            throw new Error(`Duplicate canonical name found in name list. Check ${canonicalNameListCsvPath} for duplicates`);
+        }
+
+        dict[next.canonicalName] = new Set(next.names.split(',').filter(n => n !== ''));
+        return dict;
+    }, {});
+}
+
+async function persistExerciseNameLookup(list) {
+    await fs.outputFile(nameListCsvPath, convertArrayToCSV(list));
+    return nameListCsvPath;
+}
+
+async function persistCanonicalNameLookup(canonicalNameLookup) {
     const formattedLookup = Object.keys(canonicalNameLookup).map(key => {
         return {
             canonicalName: key,
-            names: Array.from(canonicalNameLookup[key]).reduce((commaDelimitedString, next) => `${next},${commaDelimitedString}`, '')            
+            names: Array.from(canonicalNameLookup[key]).reduce((commaDelimitedString, next) => `${next},${commaDelimitedString}`, '')
         }
     });
 
-    await fs.outputFile(canonicalNamesCsvPath, convertArrayToCSV(formattedLookup));
-    return canonicalNamesCsvPath;
+    await fs.outputFile(canonicalNameListCsvPath, convertArrayToCSV(formattedLookup));
+    return canonicalNameListCsvPath;
 }
 
 async function persistExtractedSets(extractedSets, exceptions) {
@@ -120,7 +140,9 @@ module.exports = {
     persistCleanedRows,
     getCleanedRows,
     persistExtractedSets,
-    getExerciseSynonymList,
-    persistExerciseSynonymList,
+    getExerciseNameList,
+    getExerciseNameLookup,
+    getCanonicalNameLookup,
+    persistExerciseNameLookup,
     persistCanonicalNameLookup
 };
