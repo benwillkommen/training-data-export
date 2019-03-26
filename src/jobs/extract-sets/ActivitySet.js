@@ -4,7 +4,8 @@ class ActivitySet {
         this.id = uuid();
         this.week = row.week;
         this.day = row.day;
-        this.exercise = row.exercise;
+        this.exercise = row.canonicalName;
+        this.originalExerciseName = row.originalName;
         this.setNumber = setNumber;
         this.reps = Number(reps) || Number(row.reps);
         this.instructions = row.instructions;

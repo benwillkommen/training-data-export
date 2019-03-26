@@ -5,7 +5,9 @@ const {
     flattenSheets,
     associateSuperSets,
     fillInBlankExerciseNames,
-    addHeaders } = require('./util');
+    addHeaders,
+    addCanonicalNameColumn
+ } = require('./util');
 
 const BATCH_PATH = process.argv[2];
 
@@ -15,7 +17,8 @@ const BATCH_PATH = process.argv[2];
     const cleanedSheets = cleanSheets(sheetsFromFileSystem);
     const rows = flattenSheets(cleanedSheets);
     const rowsWithAllColumns = ensureAllColumnsExist(rows);
-    const rowsWithAssociatedSupersets = associateSuperSets(rowsWithAllColumns);
+    const rowsWithCanonicalNames = await addCanonicalNameColumn(rowsWithAllColumns);
+    const rowsWithAssociatedSupersets = associateSuperSets(rowsWithCanonicalNames);
     const rowsWithBlankExercisesFilledIn = fillInBlankExerciseNames(rowsWithAssociatedSupersets)
     const cleanedRows = addHeaders(rowsWithBlankExercisesFilledIn);
 
