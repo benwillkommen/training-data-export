@@ -11,6 +11,7 @@ const moment = require('moment');
 const { TRAINING_DATA_DIR } = require('../../../constants');
 const defaultSheetDownloadDirectory = `${TRAINING_DATA_DIR}/downloaded-sheets`;
 const defaultCleanedRowsDirectory = `${TRAINING_DATA_DIR}/cleaned-rows`;
+const defaultRepPRsDirectory = `${TRAINING_DATA_DIR}/rep-prs`;
 const defaultExtractedSetsDirectory = `${TRAINING_DATA_DIR}/extracted-sets`;
 
 const nameListCsvPath = `${TRAINING_DATA_DIR}/exercise-synonyms/name-list.csv`;
@@ -115,6 +116,21 @@ async function persistExtractedSets(extractedSets, exceptions) {
 
 }
 
+async function persistRepPRs(repPRs) {
+    const dateString = moment().format('YYYY-MM-DD-THH-mm-ss.SS');
+    const directory = `${defaultRepPRsDirectory}/${dateString}/rep-prs.json`;
+
+    await fs.outputFile(directory, JSON.stringify(repPRs, null, 3));
+
+    return directory;
+
+}
+
+async function getExtractedSets(extractedSetsCsvPath) {
+    const _csvPath = extractedSetsCsvPath || `${defaultExtractedSetsDirectory}/${_getMostRecent(defaultExtractedSetsDirectory)}/sets.csv`;
+    return await csv().fromFile(_csvPath);
+}
+
 // Return only base file name without dir
 function _getMostRecent(dir) {
     var fs = require('fs'),
@@ -144,5 +160,7 @@ module.exports = {
     getExerciseNameLookup,
     getCanonicalNameLookup,
     persistExerciseNameLookup,
-    persistCanonicalNameLookup
+    persistCanonicalNameLookup,
+    getExtractedSets,
+    persistRepPRs
 };
