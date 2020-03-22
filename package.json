@@ -6,21 +6,23 @@
   "scripts": {
     "start": "node process-rows",
     "row-cells": "node process-row-cells",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "e2e-test": "jest --testPathPattern=e2e\\.test\\.js --config=__e2e_tests__/jest.e2e.config.js",
+    "test": "jest --testPathPattern=test\\.js",
+    "oauth-dance": "node ./src/db/repositories/googleSheets/auth/oauthDance.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "convert-array-to-csv": "^1.0.4",
-    "csvtojson": "^2.0.8",
+    "convert-array-to-csv": "^1.0.10",
+    "csvtojson": "^2.0.10",
     "fs-extra": "^7.0.1",
-    "googleapis": "^27.0.0",
+    "googleapis": "^39.2.0",
     "moment": "^2.24.0",
     "system-sleep": "^1.3.6",
-    "underscore": "^1.9.1",
-    "uuid": "^3.3.2"
+    "underscore": "^1.9.2",
+    "uuid": "^3.4.0"
   },
   "devDependencies": {
-    "jest": "^23.6.0"
+    "jest": "^25.1.0"
   }
 }
