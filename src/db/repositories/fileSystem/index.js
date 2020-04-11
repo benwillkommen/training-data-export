@@ -22,7 +22,9 @@ async function persistSheets(sheets, downloadDirectory = defaultSheetDownloadDir
     const downloadBatchDirectoryName = `batch-${dateString}`;
     const batchPath = `${downloadDirectory}/${downloadBatchDirectoryName}`;
     const persistedSheets = await Promise.all(sheets.map(async s => {
-        const filePath = `${batchPath}/${s.data.sheetTitle}.json`;
+        // replace slashes (used for dates) in title with filename safe characters
+        const fileName = s.data.sheetTitle.replace(/\//g, '-');
+        const filePath = `${batchPath}/${fileName}.json`;
         await fs.outputFile(filePath, JSON.stringify(s.data, null, 3));
 
         return s.data;

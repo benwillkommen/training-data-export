@@ -49,11 +49,19 @@ function consolidateSheet(sheet) {
     const specialCharsRemovedRows = dayNameNormalizedRows.map(row => row.map(cell => typeof cell === "string" ? cell.replace(/["]*/g, "") : cell));
     const dayLabeledRows = extractDays(specialCharsRemovedRows, 1);
     const weekLabeledRows = dayLabeledRows.map(r => {
-        r.unshift(parseInt(sheet.sheetTitle.replace(/\D/g, '')));
+        r.unshift(parseInt(sheet.sheetTitle.match(/Week (\d+)/)[1]));
         return r;
     });
 
-    return weekLabeledRows;
+    const rowsWithStartDates = addWeekStartDate(weekLabeledRows, sheet.sheetTitle);
+
+    return rowsWithStartDates;
+}
+
+function addWeekStartDate(rows, sheetTitle) {
+    const matches = sheetTitle.match(/(\d{4}(-|\/)\d{2}(-|\/)\d{2})/);
+    const weekStartDate = matches ? matches[0].replace(/\//g, '-') : "";
+    return rows.map(r => [weekStartDate].concat(r));
 }
 
 module.exports = {

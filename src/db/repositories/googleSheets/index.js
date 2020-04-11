@@ -5,8 +5,7 @@ const { GOOGLE_SHEETS_API_SLEEP_MS } = require('../../../constants');
 
 async function getSheets(spreadsheetId) {
     const sheetsClient = await getGoogleSheetsClient();
-    const getSpreadsheetAsync = promisify(sheetsClient.spreadsheets.get);
-    const spreadSheet = await getSpreadsheetAsync({ spreadsheetId });
+    const spreadSheet = await sheetsClient.spreadsheets.get({ spreadsheetId });
     const sheetTitles = spreadSheet.data.sheets.map(s => s.properties.title);
 
     const sheets = await getIndividualSheetsAsync(spreadsheetId, sheetTitles, sheetsClient)
@@ -16,18 +15,17 @@ async function getSheets(spreadsheetId) {
 async function getIndividualSheetsAsync(spreadsheetId, sheetTitles, sheetsClient) {
     // uncomment if getting rate limited during dev
     //sheetTitles = sheetTitles.slice(8, 13);
-    const getSheetAsync = promisify(sheetsClient.spreadsheets.values.get);
 
     const backoffParams = {
         sleepTime: GOOGLE_SHEETS_API_SLEEP_MS,
-        retriesRemaining: 10,
+        retriesRemaining: 20,
         consecutiveSuccesses: 0,
         consecutiveFailures: 0
     }
 
     async function getSheetsWithBackoff(sheetTitlesRemaining, sheetsCollected, {
         sleepTime = GOOGLE_SHEETS_API_SLEEP_MS,
-        retriesRemaining = 10,
+        retriesRemaining = 20,
         consecutiveFailures = 0,
         consecutiveSuccesses = 0
     }) {
@@ -41,7 +39,7 @@ async function getIndividualSheetsAsync(spreadsheetId, sheetTitles, sheetsClient
         console.log(`getting sheet: ${sheetTitle}`);
     
         try {
-            const sheet = await getSheetAsync({
+            const sheet = await sheetsClient.spreadsheets.values.get({
                 spreadsheetId: spreadsheetId,
                 range: sheetTitle,
             });

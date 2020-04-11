@@ -25,11 +25,11 @@ module.exports = {
     fillInBlankExerciseNames(rows) {
         for (let i = 0; i < rows.length; i++) {
             const currentRow = rows[i];
-            if (currentRow[2].trim() === "") {
-                currentRow[2] = rows[i - 1][2];
-            }
             if (currentRow[3].trim() === "") {
                 currentRow[3] = rows[i - 1][3];
+            }
+            if (currentRow[4].trim() === "") {
+                currentRow[4] = rows[i - 1][4];
             }
         }
         return rows;
@@ -38,9 +38,9 @@ module.exports = {
     async addCanonicalNameColumn(rows) {
         const exerciseNameLookup = await db.fileSystem.getExerciseNameLookup();
         const rowsWithCanonicalNames = rows.map(row => {
-            const name = row[2]
+            const name = row[3]
             const canonicalName = exerciseNameLookup[name.toLowerCase()] || "";
-            row.splice(2, 0, canonicalName);
+            row.splice(3, 0, canonicalName);
             return row;
         });
         return rowsWithCanonicalNames;
