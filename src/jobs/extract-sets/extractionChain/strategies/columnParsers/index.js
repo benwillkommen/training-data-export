@@ -1,4 +1,5 @@
 module.exports = {
     parseSetRange: require('./parseSetRange'),
-    parseWeightColumn: require('./parseWeightColumn')
+    parseWeightColumn: require('./parseWeightColumn'),
+    parseFullyQualifiedWeightColumn: require('./parseFullyQualifiedWeightColumn')
 }

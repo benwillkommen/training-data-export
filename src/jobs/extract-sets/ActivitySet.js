@@ -14,7 +14,7 @@ class ActivitySet {
         this.supersetId = row.supersetId;
         this.anomalous = false;
         this.strategyUsed = strategyUsed,
-            this.dropSetId = dropSetId;
+        this.dropSetId = dropSetId;
     }
 }
 

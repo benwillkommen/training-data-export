@@ -9,7 +9,7 @@ const {
     addCanonicalNameColumn
  } = require('./util');
 
-const BATCH_PATH = process.argv[2] || './data/downloaded-sheets/batch-2020-04-11-T17-49-27.84';
+const BATCH_PATH = process.argv[2] || './data/downloaded-sheets/batch-2020-04-12-T20-02-46.64';
 
 (async function () {
     const sheetsFromFileSystem = await db.fileSystem.getSheets(BATCH_PATH);

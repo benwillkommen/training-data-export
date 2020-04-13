@@ -15,5 +15,6 @@ module.exports = {
     finalSetDoubleDropSetStrategy: require('./finalSetDoubleDropSetStrategy'),
     setRangeInParenthesisStrategy: require('./setRangeInParenthesisStrategy'),
     catchAllStrategy: require('./catchAllStrategy'),
-    ignoreRowStrategy: require('./ignoreRowStrategy')
+    ignoreRowStrategy: require('./ignoreRowStrategy'),
+    fullyQualifiedWeightColumnStrategy: require('./fullyQualifiedWeightColumnStrategy')
 }

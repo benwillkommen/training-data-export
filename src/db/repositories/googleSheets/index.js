@@ -1,4 +1,3 @@
-const { promisify } = require('util');
 const sleep = require('system-sleep');
 const { getGoogleSheetsClient } = require('./auth');
 const { GOOGLE_SHEETS_API_SLEEP_MS } = require('../../../constants');

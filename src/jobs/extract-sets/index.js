@@ -1,31 +1,18 @@
 const db = require('../../db');
 const extractionChain = require('./extractionChain');
 
-const CLEANED_ROWS_PATH = process.argv[2];
+const CLEANED_ROWS_PATH = process.argv[2] || './data/cleaned-rows/2020-04-12-T20-04-15.94.csv';
 
 (async function () {
     const cleanedRows = (await db.fileSystem.getCleanedRows(CLEANED_ROWS_PATH))
-        // .filter(r =>    r.week === "2" && 
-        //                 r.day === "4" &&
-        //                 r.exercise === "Rack Pulls- Mid Shin");
-        // .filter(r =>    r.week === "66" && 
-        //                 r.day === "2" &&
-        //                 r.exercise === "Seated DB Shoulder Press");
-        // .filter(r =>    r.week === "67" && 
-        //                 r.day === "2" &&
-        //                 r.exercise === "Strip The Rack Presses");
-        // .filter(r =>    r.week === "145" && 
+        // .filter(r =>    r.week === "166" && 
         //                 r.day === "1" &&
-        //                 r.exercise === "Front Squats");
-        // .filter(r =>    r.week === "139" && 
-        //                 r.day === "1" &&
-        //                 r.exercise === "Leg Extensions");
-        // .filter(r =>    r.week === "140" && 
-        //                 r.day === "1" &&
-        //                 r.exercise === "Leg Press");
-        // .filter(r =>    r.week === "145" && 
+        //                 r.canonicalName === "leg press");
+        //  .filter(r =>   r.week === "198" && 
         //                 r.day === "2" &&
-        //                 r.exercise === "Flat DB Bench Press");
+        //                 r.canonicalName === "incline barbell bench press");
+        // .filter(r =>    r.week === "162");
+
 
     const { sets, exceptions } = extractionChain.extractSets(cleanedRows);
 

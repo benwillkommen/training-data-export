@@ -1,7 +1,7 @@
 const uuid = require('uuid');
 module.exports = function associateSuperSets(cleanedRows) {
     const superSetIndices = cleanedRows
-        .map((row, i) => { return { value: row[3].toLowerCase().trim(), index: i }; })
+        .map((row, i) => { return { value: row[4].toLowerCase().trim(), index: i }; })
         .filter(rowObj => rowObj.value.includes("superset"))
         .map(rowObj => rowObj.index);
     const groupedSuperSetIndices = superSetIndices.reduce((collection, next) => {
