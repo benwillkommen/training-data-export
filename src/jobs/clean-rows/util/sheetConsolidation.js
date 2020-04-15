@@ -14,7 +14,10 @@ function stripBodyWeightRows(rows) {
 
 function extractDay(rows, day) {
     const searchString = `Day ${day}`;
-    const startIndex = rows.findIndex(row => row.length > 0 && row[0] === searchString)
+    const startIndex = rows.findIndex(row =>
+        row.length > 0 &&
+        typeof row[0] === "string" &&
+        row[0].startsWith(searchString))
     const endIndex = rows.findIndex((row, index) => index > startIndex && row.length > 0 && !isCellEmpty(row[0]));
 
     return rows.slice(startIndex + 1, endIndex).map(r => {
@@ -24,7 +27,14 @@ function extractDay(rows, day) {
 }
 
 function extractDays(cleanedRows) {
-    return extractDay(cleanedRows, 1).concat(extractDay(cleanedRows, 2)).concat(extractDay(cleanedRows, 3)).concat(extractDay(cleanedRows, 4));
+    // goddamn this is dumb.
+    return extractDay(cleanedRows, 1)
+        .concat(extractDay(cleanedRows, 2))
+        .concat(extractDay(cleanedRows, 3))
+        .concat(extractDay(cleanedRows, 4))
+        .concat(extractDay(cleanedRows, 5))
+        .concat(extractDay(cleanedRows, 6))
+        .concat(extractDay(cleanedRows, 7))
 }
 
 function normalizeDayName(row){
