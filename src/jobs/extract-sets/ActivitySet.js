@@ -2,6 +2,8 @@ const uuid = require('uuid/v4');
 class ActivitySet {
     constructor(row, setNumber, strategyUsed, reps, weight, dropSetId) {
         this.id = uuid();
+        this.inferredDate = row.inferredDate;
+        this.weekStartDate = row.weekStartDate;
         this.week = row.week;
         this.day = row.day;
         this.exercise = row.canonicalName;

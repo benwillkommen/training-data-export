@@ -1,7 +1,7 @@
 const db = require('../../db');
 const extractionChain = require('./extractionChain');
 
-const CLEANED_ROWS_PATH = process.argv[2] || './data/cleaned-rows/2020-04-14-T20-30-58.71.csv';
+const CLEANED_ROWS_PATH = process.argv[2] || './data/cleaned-rows/2020-04-15-T21-00-13.31.csv';
 
 (async function () {
     const cleanedRows = (await db.fileSystem.getCleanedRows(CLEANED_ROWS_PATH))
