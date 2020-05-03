@@ -12,17 +12,6 @@ const {
     dialect: 'postgres'
   });
 
-  // const sequelize = new Sequelize('postgres://postgres:example@localhost:5432');
-
-
-  await sequelize.authenticate()
-    // .then(() => {
-    //   console.log('Connection has been established successfully.');
-    // })
-    // .catch(err => {
-    //   console.error('Unable to connect to the database:', err);
-    // });
-
   const Model = Sequelize.Model;
   class Set extends Model {}
   Set.init({
@@ -31,13 +20,12 @@ const {
       type: Sequelize.INTEGER,
       allowNull: false
     },
-    reps: {
-      type: Sequelize.INTEGER,
-      allowNull: false
-    },
     exercise: {
       type: Sequelize.STRING
       // allowNull defaults to true
+    },
+    date: {
+      type: Sequelize.DATE()
     }
   }, {
     sequelize,
@@ -45,7 +33,53 @@ const {
     // options
   });
 
+  class SetDimension extends Model {}
+  SetDimension.init({
+    value: {
+      type: Sequelize.STRING
+    }
+  }, {
+    sequelize,
+    modelName: 'setDimension'
+  });
+
+  Set.hasMany(SetDimension)
+
+  class Dimension extends Model {}
+  Dimension.init({
+    name: {
+      type: Sequelize.STRING
+    },
+    type: {
+      type: Sequelize.STRING
+    }
+  }, {
+    sequelize,
+    modelName: 'dimension'
+  });
+
+  SetDimension.hasOne(Dimension)
+  // class Exercise extends Model {}
+  // Exercise.init({
+  //   name: {
+  //     type: Sequelize.STRING,
+  //     allowNull: false
+  //   },
+  //   defaultDimensions: {
+
+  //   }
+  // });
+
+  // class Dimension extends Model {}
+  // Dimension.init({
+
+  // });
+
+  // class Unit extends Model {}
+  // Unit.init({
+  // })
   await sequelize.sync({force: true})
 
+  // const benchSet = await Set.create({number: 1, reps: 10, exercise: 'bench press'});
   await sequelize.close();
 })();
