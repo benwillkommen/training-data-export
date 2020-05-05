@@ -60,6 +60,21 @@ const schemaSketch = require('../../models/schemaSketch');
   //   })
   // }
 
+  const detatchedSetDimension1 = await db.SetDimension.create({
+    value: '69',
+    dimensionId: 2
+  })
+
+  const detatchedSetDimension2 = await db.SetDimension.create({
+    value: '420',
+    dimensionId: 1
+  })
+
+  // const detatchedSetDimension3 = await db.SetDimension.create({
+  //   value: 'nope',
+  //   dimensionId: 99
+  // })
+
   const benchSet = await db.Set.create({
     number: 1, 
     reps: 10,
@@ -68,18 +83,18 @@ const schemaSketch = require('../../models/schemaSketch');
       { 
         value: "3",
         // dimension: reps,
-        dimension: 1,
+        dimensionId: 1,
       },
       {
         value: "315",
         // dimension: weight,
-        dimension: 2,
+        dimensionId: 2,
       }
     ]
   }, {
     include: [{
-      association: Dimension.SetDimension,
-      include: [ Set.SetDimensions ]
+      association: Set.SetDimensions,
+      include: [ Set.SetDimensions, Dimension.SetDimension ]
     }]
   });
 
