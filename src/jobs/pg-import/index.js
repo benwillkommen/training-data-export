@@ -9,10 +9,14 @@ const {
 const Set = require('../../models/Set');
 const SetDimension = require('../../models/SetDimension');
 const Dimension = require('../../models/Dimension');
+const Exercise = require('../../models/Exercise');
 
-const schemaSketch = require('../../models/schemaSketch');
+const schemaSketch = require('./data/schemaSketch');
+const exerciseNames = require('./data/value-objects/exercise-names');
+const dimensionValueObjects = require('./data/value-objects/dimensions');
 
-(async() => {
+
+(async () => {
   const sequelize = new Sequelize(DB_INITIAL, DB_USER, DB_PASSWORD, {
     host: 'localhost',
     dialect: 'postgres'
@@ -23,6 +27,7 @@ const schemaSketch = require('../../models/schemaSketch');
     Set: Set.init(sequelize, Sequelize),
     SetDimension: SetDimension.init(sequelize, Sequelize),
     Dimension: Dimension.init(sequelize, Sequelize),
+    Exercise: Exercise.init(sequelize, Sequelize)
   }
 
   // Run `.associate` if it exists,
@@ -31,34 +36,46 @@ const schemaSketch = require('../../models/schemaSketch');
     .filter(model => typeof model.associate === "function")
     .forEach(model => model.associate(models));
 
-  await sequelize.sync({force: true});
+  await sequelize.sync({ force: true });
 
   const db = {
     ...models,
     sequelize
   }
 
-  for (const dimension of schemaSketch.dimensions) {
+  for (const dimension of dimensionValueObjects) {
     await db.Dimension.create({
       name: dimension.name,
       type: dimension.type
     })
   }
-  
-  const defaultDimensions = await db.Dimension.findAll({
+
+  const defaultStrengthTrainingDimensions = await db.Dimension.findAll({
     where: {
-      [Op.or]: [{name: "reps"}, {name: "weight (lbs)"}]
+      [Op.or]: [{ name: "reps" }, { name: "weight (lbs)" }]
     }
   });
-  const reps = defaultDimensions.filter(d => d.name === 'reps')[0]
-  const weight = defaultDimensions.filter(d => d.name === 'weight (lbs)')[0]
+  const reps = defaultStrengthTrainingDimensions.filter(d => d.name === 'reps')[0]
+  const weight = defaultStrengthTrainingDimensions.filter(d => d.name === 'weight (lbs)')[0]
 
-  // for (const exercise of schemaSketch.exercises) {
-  //   await db.exercise.create({
-  //     name: exercise.name,
-
-  //   })
-  // }
+  try {
+    for (const exercise of exerciseNames) {
+      await db.Exercise.create({
+        name: exercise,
+        defaultDimensions: [
+          // reps,
+          // weight
+        ]
+      }, {
+        include: [{
+          association: Exercise.DefaultDimensions,
+          include: [Exercise.DefaultDimensions]
+        }]
+      })
+    }
+  } catch (ex) {
+    console.log(ex);
+  }
 
   const detatchedSetDimension1 = await db.SetDimension.create({
     value: '69',
@@ -76,11 +93,11 @@ const schemaSketch = require('../../models/schemaSketch');
   // })
 
   const benchSet = await db.Set.create({
-    number: 1, 
+    number: 1,
     reps: 10,
     exercise: 'bench press',
     setDimensions: [
-      { 
+      {
         value: "3",
         // dimension: reps,
         dimensionId: 1,
@@ -94,7 +111,7 @@ const schemaSketch = require('../../models/schemaSketch');
   }, {
     include: [{
       association: Set.SetDimensions,
-      include: [ Set.SetDimensions, Dimension.SetDimension ]
+      include: [Set.SetDimensions, Dimension.SetDimension]
     }]
   });
 
