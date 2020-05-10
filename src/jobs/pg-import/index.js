@@ -88,15 +88,15 @@ const dimensionValueObjects = require('./data/value-objects/dimensions');
     console.log(ex);
   }
 
-  const detatchedSetDimension1 = await db.SetDimension.create({
-    value: '69',
-    dimensionId: 2
-  })
+  // const detatchedSetDimension1 = await db.SetDimension.create({
+  //   value: '69',
+  //   dimensionId: 2
+  // })
 
-  const detatchedSetDimension2 = await db.SetDimension.create({
-    value: '420',
-    dimensionId: 1
-  })
+  // const detatchedSetDimension2 = await db.SetDimension.create({
+  //   value: '420',
+  //   dimensionId: 1
+  // })
 
   const fetchedExercise = await db.Exercise.findOne({
     include: Exercise.associations.defaultDimensions,
@@ -124,11 +124,27 @@ const dimensionValueObjects = require('./data/value-objects/dimensions');
         dimensionId: 2,
       }
     ]
-  }, {
-    include: [{
-      association: Set.SetDimensions,
-      include: [Set.SetDimensions, Dimension.SetDimension]
-    }]
+  }, { include: [{ 
+    association: Set.associations.setDimensions
+   }]
+});
+  // {
+  //   include: Set.associations.setDimensions
+  //   // include: [{
+  //   //   association: Set.SetDimensions,
+  //   //   include: [Set.SetDimensions, Dimension.SetDimension]
+  //   // }]
+  // });
+
+  const fetchedSet = await db.Set.findOne({
+    // include: [{
+    //   association: Set.associations.setDimensions,
+    //   include: [SetDimension.associations.dimension]
+    // }],
+    include: [
+      { model: SetDimension, include: [{model: Dimension, as: 'dimension'}] }
+    ],
+    where: { exercise: 'bench press' } 
   });
 
   await sequelize.close();

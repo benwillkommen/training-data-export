@@ -12,9 +12,9 @@ class SetDimension extends Model {
     })
   }
 
-  // static associate(models) {
-  //   this.Dimension = this.hasOne(models.Dimension);
-  // }
+  static associate(models) {
+    this.dimension = this.belongsTo(models.Dimension, {as: 'dimension', foreignKey: 'dimensionId'});
+  }
 }
 
 module.exports = SetDimension;

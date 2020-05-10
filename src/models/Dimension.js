@@ -18,9 +18,9 @@ class Dimension extends Model {
   }
 
   static associate(models) {
-    this.SetDimension = this.hasMany(models.SetDimension);
+    // this.associations.setDimensions = this.hasMany(models.SetDimension);
     // this.DefaultDimensions = this.belongsToMany(models.Exercise, { as: 'defaultForExercises', through: 'exerciseDefaultDimension' });
-    this.belongsToMany(models.Exercise, { as: 'DefaultDimensionForExercise', through: models.ExerciseDefaultDimension, foreignKey: 'dimensionId'});
+    this.associations.defaultDimensionForExercises = this.belongsToMany(models.Exercise, { as: 'defaultDimensionForExercises', through: models.ExerciseDefaultDimension, foreignKey: 'dimensionId'});
 
 
   }

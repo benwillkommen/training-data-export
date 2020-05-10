@@ -23,7 +23,10 @@ class Set extends Model {
   }
 
   static associate(models) {
-    this.SetDimensions = this.hasMany(models.SetDimension);
+    this.associations.setDimensions = this.hasMany(models.SetDimension, {
+      foreignKey: { allowNull: false },
+      onDelete: 'CASCADE'
+    });
   }
 }
 
