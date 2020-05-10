@@ -40,7 +40,7 @@ const dimensionValueObjects = require('./data/value-objects/dimensions');
 
   try {
     await sequelize.sync({ force: true });
-  } catch (ex){
+  } catch (ex) {
     throw ex;
   }
 
@@ -66,7 +66,7 @@ const dimensionValueObjects = require('./data/value-objects/dimensions');
 
   try {
     for (const exercise of exerciseNames) {
-      const instance =  db.Exercise.build({
+      const instance = db.Exercise.build({
         name: exercise,
         // defaultDimensions: [
         //   // {name:`test dimenstion name for ${exercise}`}
@@ -100,7 +100,7 @@ const dimensionValueObjects = require('./data/value-objects/dimensions');
 
   const fetchedExercise = await db.Exercise.findOne({
     include: Exercise.associations.defaultDimensions,
-    where: { name: 'bench press' } 
+    where: { name: 'bench press' }
   });
 
   // const detatchedSetDimension3 = await db.SetDimension.create({
@@ -115,36 +115,24 @@ const dimensionValueObjects = require('./data/value-objects/dimensions');
     setDimensions: [
       {
         value: "3",
-        // dimension: reps,
-        dimensionId: 1,
+        dimensionId: reps.dimensionId,
       },
       {
         value: "315",
-        // dimension: weight,
-        dimensionId: 2,
+        dimensionId: weight.dimensionId,
       }
     ]
-  }, { include: [{ 
-    association: Set.associations.setDimensions
-   }]
-});
-  // {
-  //   include: Set.associations.setDimensions
-  //   // include: [{
-  //   //   association: Set.SetDimensions,
-  //   //   include: [Set.SetDimensions, Dimension.SetDimension]
-  //   // }]
-  // });
+  }, {
+    include: [{
+      association: Set.associations.setDimensions
+    }]
+  });
 
   const fetchedSet = await db.Set.findOne({
-    // include: [{
-    //   association: Set.associations.setDimensions,
-    //   include: [SetDimension.associations.dimension]
-    // }],
     include: [
-      { model: SetDimension, include: [{model: Dimension, as: 'dimension'}] }
+      { model: SetDimension, include: [{ model: Dimension, as: 'dimension' }] }
     ],
-    where: { exercise: 'bench press' } 
+    where: { exercise: 'bench press' }
   });
 
   await sequelize.close();
