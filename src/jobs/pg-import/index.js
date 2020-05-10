@@ -10,6 +10,7 @@ const Set = require('../../models/Set');
 const SetDimension = require('../../models/SetDimension');
 const Dimension = require('../../models/Dimension');
 const Exercise = require('../../models/Exercise');
+const ExerciseDefaultDimension = require('../../models/ExerciseDefaultDimension');
 
 const schemaSketch = require('./data/schemaSketch');
 const exerciseNames = require('./data/value-objects/exercise-names');
@@ -27,7 +28,8 @@ const dimensionValueObjects = require('./data/value-objects/dimensions');
     Set: Set.init(sequelize, Sequelize),
     SetDimension: SetDimension.init(sequelize, Sequelize),
     Dimension: Dimension.init(sequelize, Sequelize),
-    Exercise: Exercise.init(sequelize, Sequelize)
+    Exercise: Exercise.init(sequelize, Sequelize),
+    ExerciseDefaultDimension: ExerciseDefaultDimension.init(sequelize, Sequelize)
   }
 
   // Run `.associate` if it exists,
@@ -36,7 +38,11 @@ const dimensionValueObjects = require('./data/value-objects/dimensions');
     .filter(model => typeof model.associate === "function")
     .forEach(model => model.associate(models));
 
-  await sequelize.sync({ force: true });
+  try {
+    await sequelize.sync({ force: true });
+  } catch (ex){
+    throw ex;
+  }
 
   const db = {
     ...models,
@@ -60,18 +66,23 @@ const dimensionValueObjects = require('./data/value-objects/dimensions');
 
   try {
     for (const exercise of exerciseNames) {
-      await db.Exercise.create({
+      const instance =  db.Exercise.build({
         name: exercise,
-        defaultDimensions: [
-          // reps,
-          // weight
-        ]
+        // defaultDimensions: [
+        //   // {name:`test dimenstion name for ${exercise}`}
+        //   // {id:1, isNewRecord: false}
+        //   reps
+        // ]
       }, {
-        include: [{
-          association: Exercise.DefaultDimensions,
-          include: [Exercise.DefaultDimensions]
-        }]
-      })
+        // include: [{
+        //   association: Exercise.DefaultDimensions,
+        //   include: [Exercise.DefaultDimensions]
+        // }]
+      });
+      // instance.setDefaultDimensions([reps.id, weight.id])
+      const savedInstance = await instance.save()
+      const anddis = await instance.setDefaultDimensions([reps.dimensionId, weight.dimensionId])
+      console.log(anddis)
     }
   } catch (ex) {
     console.log(ex);
@@ -86,6 +97,11 @@ const dimensionValueObjects = require('./data/value-objects/dimensions');
     value: '420',
     dimensionId: 1
   })
+
+  const fetchedExercise = await db.Exercise.findOne({
+    include: Exercise.associations.defaultDimensions,
+    where: { name: 'bench press' } 
+  });
 
   // const detatchedSetDimension3 = await db.SetDimension.create({
   //   value: 'nope',
