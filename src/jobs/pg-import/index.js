@@ -66,23 +66,15 @@ const dimensionValueObjects = require('./data/value-objects/dimensions');
 
   try {
     for (const exercise of exerciseNames) {
-      const instance = db.Exercise.build({
-        name: exercise,
-        // defaultDimensions: [
-        //   // {name:`test dimenstion name for ${exercise}`}
-        //   // {id:1, isNewRecord: false}
-        //   reps
-        // ]
-      }, {
-        // include: [{
-        //   association: Exercise.DefaultDimensions,
-        //   include: [Exercise.DefaultDimensions]
-        // }]
+      db.sequelize.transaction(async (transaction) => {
+        const instance = await db.Exercise.create({
+          name: exercise,
+        }, { transaction });
+        await instance.setDefaultDimensions([
+          reps.dimensionId,
+          weight.dimensionId
+        ], { transaction })
       });
-      // instance.setDefaultDimensions([reps.id, weight.id])
-      const savedInstance = await instance.save()
-      const anddis = await instance.setDefaultDimensions([reps.dimensionId, weight.dimensionId])
-      console.log(anddis)
     }
   } catch (ex) {
     console.log(ex);
