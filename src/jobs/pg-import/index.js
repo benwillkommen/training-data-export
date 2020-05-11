@@ -9,7 +9,7 @@ const dimensionValueObjects = require('./data/value-objects/dimensions');
 
 
 (async () => {
-  
+
   const db = await setupDb();
 
   for (const dimension of dimensionValueObjects) {
@@ -53,7 +53,7 @@ const dimensionValueObjects = require('./data/value-objects/dimensions');
 
 
   //TODO - include test case verifying that Exercises are pulled back with defaultDimensions
-  const fetchedExercise = await db.Exercise.findOne({
+  const benchExercise = await db.Exercise.findOne({
     include: db.Exercise.associations.defaultDimensions,
     where: { name: 'bench press' }
   });
@@ -61,7 +61,7 @@ const dimensionValueObjects = require('./data/value-objects/dimensions');
   const benchSet = await db.Set.create({
     number: 1,
     reps: 10,
-    exercise: 'bench press',
+    exerciseId: benchExercise.exerciseId,
     setDimensions: [
       {
         value: "3",
@@ -75,6 +75,8 @@ const dimensionValueObjects = require('./data/value-objects/dimensions');
   }, {
     include: [{
       association: db.Set.associations.setDimensions
+    }, {
+      association: db.Set.associations.exercise
     }]
   });
 
@@ -82,9 +84,14 @@ const dimensionValueObjects = require('./data/value-objects/dimensions');
   //       related SetDimensions, and Dimension
   const fetchedSet = await db.Set.findOne({
     include: [
-      { model: db.SetDimension, include: [{ model: db.Dimension, as: 'dimension' }] }
+      {
+        model: db.SetDimension, include: [
+          { model: db.Dimension, as: 'dimension' }
+        ]
+      },
+      { model: db.Exercise, as: 'exercise' },
     ],
-    where: { exercise: 'bench press' }
+    where: { exerciseId: benchExercise.exerciseId }
   });
 
   await db.sequelize.close();

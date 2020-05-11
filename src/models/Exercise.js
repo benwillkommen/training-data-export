@@ -17,7 +17,7 @@ class Exercise extends Model {
   }
 
   static associate(models) {
-    this.associations.defaultDimensions = this.belongsToMany(models.Dimension, { as: 'defaultDimensions', through: models.ExerciseDefaultDimension, foreignKey: 'exerciseId'});
+    this.associations.defaultDimensions = this.belongsToMany(models.Dimension, { as: 'defaultDimensions', through: models.ExerciseDefaultDimension, foreignKey: 'exerciseId'});    
   }
 }
 

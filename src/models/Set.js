@@ -8,10 +8,10 @@ class Set extends Model {
         type: DataTypes.INTEGER,
         allowNull: false
       },
-      exercise: {
-        type: DataTypes.STRING
-        // allowNull defaults to true
-      },
+      // exercise: {
+      //   type: DataTypes.STRING
+      //   // allowNull defaults to true
+      // },
       logDate: {
         type: DataTypes.DATE()
       }
@@ -27,6 +27,8 @@ class Set extends Model {
       foreignKey: { allowNull: false },
       onDelete: 'CASCADE'
     });
+    this.associations.exercise = this.belongsTo(models.Exercise, {as: 'exercise', foreignKey: 'exerciseId'});
+
   }
 }
 
