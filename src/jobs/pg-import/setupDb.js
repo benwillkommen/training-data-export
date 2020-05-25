@@ -34,7 +34,7 @@ module.exports = async function () {
     .forEach(model => model.associate(models));
 
   try {
-    await sequelize.sync({ force: true });
+    await sequelize.sync({ force: false });
   } catch (ex) {
     throw ex;
   }

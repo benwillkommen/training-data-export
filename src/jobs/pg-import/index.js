@@ -1,11 +1,13 @@
 const Sequelize = require('sequelize');
 const { Op } = Sequelize;
-
+const moment = require('moment');
 const setupDb = require('./setupDb')
 
 const schemaSketch = require('./data/schemaSketch');
 const exerciseNames = require('./data/value-objects/exercise-names');
 const dimensionValueObjects = require('./data/value-objects/dimensions');
+
+const { fileSystem: { getExtractedSets } } = require('../../db');
 
 
 (async () => {
@@ -53,46 +55,63 @@ const dimensionValueObjects = require('./data/value-objects/dimensions');
 
 
   //TODO - include test case verifying that Exercises are pulled back with defaultDimensions
-  const benchExercise = await db.Exercise.findOne({
-    include: db.Exercise.associations.defaultDimensions,
-    where: { name: 'bench press' }
-  });
-
-  const benchSet = await db.Set.create({
-    number: 1,
-    reps: 10,
-    exerciseId: benchExercise.exerciseId,
-    setDimensions: [
-      {
-        value: "3",
-        dimensionId: reps.dimensionId,
-      },
-      {
-        value: "315",
-        dimensionId: weight.dimensionId,
-      }
-    ]
-  }, {
-    include: [{
-      association: db.Set.associations.setDimensions
-    }, {
-      association: db.Set.associations.exercise
-    }]
-  });
+  // const benchExercise = await db.Exercise.findOne({
+  //   include: db.Exercise.associations.defaultDimensions,
+  //   where: { name: 'bench press' }
+  // });
 
   //TODO - include test case verifying that peristed Set can be pulled back with
   //       related SetDimensions, and Dimension
-  const fetchedSet = await db.Set.findOne({
-    include: [
-      {
-        model: db.SetDimension, include: [
-          { model: db.Dimension, as: 'dimension' }
-        ]
-      },
-      { model: db.Exercise, as: 'exercise' },
-    ],
-    where: { exerciseId: benchExercise.exerciseId }
-  });
+  // const fetchedSet = await db.Set.findOne({
+  //   include: [
+  //     {
+  //       model: db.SetDimension, include: [
+  //         { model: db.Dimension, as: 'dimension' }
+  //       ]
+  //     },
+  //     { model: db.Exercise, as: 'exercise' },
+  //   ],
+  //   where: { exerciseId: benchExercise.exerciseId }
+  // });
 
+  const exercisesFromDb = await db.Exercise.findAll()
+
+  const extractedSets = await getExtractedSets()
+
+  const failedInserts = [];
+  for (const flatSet of extractedSets) {
+    const exercise = exercisesFromDb.filter(e => e.name === flatSet.exercise)[0]
+
+    try {
+      await db.Set.create({
+        logDate: moment(flatSet.inferredDate),
+        number: Number(flatSet.setNumber),
+        exerciseId: exercise.exerciseId,
+        setDimensions: [
+          {
+            value: Number(flatSet.reps),
+            dimensionId: reps.dimensionId,
+          },
+          {
+            value: Number(flatSet.weight),
+            dimensionId: weight.dimensionId,
+          }
+        ]
+      }, {
+        include: [{
+          association: db.Set.associations.setDimensions
+        }, {
+          association: db.Set.associations.exercise
+        }]
+      });
+    } catch (ex) {
+      failedInserts.push({
+        flatSet,
+        ex
+      })
+    }
+  }
+
+  console.log(failedInserts);
   await db.sequelize.close();
 })();
